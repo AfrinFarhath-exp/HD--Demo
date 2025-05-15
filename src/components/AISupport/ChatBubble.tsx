@@ -10,14 +10,48 @@ export default function ChatBubble({ message }: ChatBubbleProps) {
   const handleCopy = () => {
     navigator.clipboard.writeText(message.content).then(() => {});
   };
-
+  if (message.isLoading) {
+    return (
+      <div className={`px-6 py-4 animate-pulse`}>
+        <div className="flex items-center space-x-2">
+          <div className="w-6 h-6 relative">
+            {!isUser ? (
+              <div className="w-full h-full rounded-full bg-primary flex items-center justify-center">
+                <span className="text-white text-xs">AI</span>
+              </div>
+            ) : (
+              <div className="w-full h-full rounded-full bg-gray-300 flex items-center justify-center">
+                <span className="text-gray-600 text-xs">U</span>
+              </div>
+            )}
+          </div>
+          <div className="flex-1">
+            <div className="text-sm text-gray-500 mb-2">
+              {!isUser ? "AI thinking..." : "Sending message..."}
+            </div>
+            <div className="space-y-2">
+              <div className="w-3/4 h-4 bg-gray-200 rounded"></div>
+              <div className="w-1/2 h-4 bg-gray-200 rounded"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div
-      className={` ${
-        isUser ? "animate-slideInRight" : "animate-slideInLeft"
-      } flex ${isUser ? "justify-end" : "justify-start"} `}
+      className={`${
+        isUser
+          ? "animate-slideInRight justify-end"
+          : "animate-slideInLeft justify-start"
+      } 
+      flex`}
     >
-      <div className={`px-6 py-4 flex items-start  ${isUser ? 'flex-row-reverse space-x-reverse bg-white ' : ""} space-x-4`}>
+      <div
+        className={`px-6 py-4 flex items-start  ${
+          isUser ? "flex-row-reverse space-x-reverse bg-white " : ""
+        } space-x-4`}
+      >
         <div className="w-6 h-6 mt-1">
           <div className="w-full h-full rounded-full bg-primary flex items-center justify-center">
             <span className="text-white text-xs">
