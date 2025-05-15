@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { theme } from "../../theme";
+import reports from "../../data/report";
 
-const ReturnsReport = () => {
+const ReturnPopup = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const[title,setTitle] = useState("");
 
   const handleViewReport = (p0: { startDate: string; endDate: string; title: any; }) => {
     console.log("Generating report from", startDate, "to", endDate);
@@ -102,7 +104,7 @@ const ReturnsReport = () => {
               endDate,
               title,
             })
-                 }
+            }
             style={{
             backgroundColor: theme.colors.primary,
             color: theme.colors.text.light,
@@ -128,4 +130,4 @@ const ReturnsReport = () => {
   );
 };
 
-export default ReturnsReport;
+export default ReturnPopup;
