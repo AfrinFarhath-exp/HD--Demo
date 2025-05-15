@@ -1,68 +1,126 @@
-import React, { useState } from "react";
-import SendIcon from "@mui/icons-material/Send";
-import SearchResult from "./SearchResult";
+import React, { useEffect, useState } from "react";
 
-interface Message {
+interface SearchResultProps {
   query: string;
-  id: number;
 }
 
-export default function ReportSearch() {
-  const [query, setQuery] = useState("");
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [idCounter, setIdCounter] = useState(0); // for unique keys
+interface Country {
+  id: number;
+  name: string;
+}
 
-  const handleSearch = () => {
-    if (query.trim() !== "") {
-      const newMessage = { query, id: idCounter };
-      setMessages((prev) => [...prev, newMessage]);
-      setIdCounter(idCounter + 1);
-      setQuery(""); // Clear input after sending
-    }
-  };
+interface Sport {
+  id: number;
+  name: string;
+}
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      handleSearch();
-    }
-  };
+interface RawPerformance {
+  id: number;
+  countryId: number;
+  sportId: number;
+  gold: number;
+  silver: number;
+  bronze: number;
+}
+
+interface ApiResponse {
+  countries: Country[];
+  sports: Sport[];
+  performances: RawPerformance[];
+}
+
+interface CountryPerformance {
+  country: string;
+  sport: string;
+  gold: number;
+  silver: number;
+  bronze: number;
+}
+
+const ReportSearch: React.FC<SearchResultProps> = ({ query }) => {
+  const [data, setData] = useState<CountryPerformance[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await fetch(
+          "https://mocki.io/v1/090bd3c7-9197-4fb1-97cd-3deef4de47ff"
+        );
+        if (!res.ok) throw new Error("Failed to fetch data");
+        const result: ApiResponse = await res.json();
+
+        // Build lookup maps
+        const countryMap = new Map<number, string>(
+          result.countries.map((c) => [c.id, c.name])
+        );
+        const sportMap = new Map<number, string>(
+          result.sports.map((s) => [s.id, s.name])
+        );
+
+        // Enrich performances
+        const enriched: CountryPerformance[] = result.performances.map((p) => ({
+          country: countryMap.get(p.countryId) || "Unknown country",
+          sport: sportMap.get(p.sportId) || "Unknown sport",
+          gold: p.gold,
+          silver: p.silver,
+          bronze: p.bronze,
+        }));
+
+        setData(enriched);
+      } catch (err: any) {
+        setError(err.message || "Something went wrong");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const q = query.trim().toLowerCase();
 
   return (
-    <div className="max-w-2xl mx-auto px-4">
-      {/* Chat-like message list */}
-      <div className="space-y-6 mb-6">
-        {messages.map((msg) => (
-          <div key={msg.id}>
-            <div className="bg-gray-100 p-3 rounded-md w-fit max-w-full">
-              <span className="font-medium">You:</span> {msg.query}
-            </div>
-            <div className="mt-2 ml-4">
-              <SearchResult query={msg.query} />
-            </div>
-          </div>
-        ))}
-      </div>
+    <div className="mt-4 text-center">
+      <h2 className="text-lg font-semibold mb-4">Results for: "{query}"</h2>
 
-      {/* Input area */}
-      <div className="flex justify-center">
-        <div className="relative w-full">
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Ask me Anything..."
-            className="w-full pr-10 pl-4 py-2 border rounded-lg shadow-sm focus:outline-none"
-          />
-          <button
-            type="button"
-            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
-            onClick={handleSearch}
-          >
-            <SendIcon className="h-5 w-5 text-primary" />
-          </button>
+      {loading && <p className="text-blue-500">Loading...</p>}
+      {error && <p className="text-red-500">{error}</p>}
+
+      {!loading && !error && (
+        <div className="overflow-x-auto">
+          <table className="min-w-full table-auto border border-gray-300">
+            <thead>
+              <tr className="bg-gray-200">
+                <th className="px-4 py-2 border">Country</th>
+                <th className="px-4 py-2 border">Sport</th>
+                <th className="px-4 py-2 border">Gold</th>
+                <th className="px-4 py-2 border">Silver</th>
+                <th className="px-4 py-2 border">Bronze</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data
+                .filter((item) =>
+                  item.country.toLowerCase().includes(q) ||
+                  item.sport.toLowerCase().includes(q)
+                )
+                .map((item, idx) => (
+                  <tr key={idx} className="hover:bg-gray-100">
+                    <td className="px-4 py-2 border">{item.country}</td>
+                    <td className="px-4 py-2 border">{item.sport}</td>
+                    <td className="px-4 py-2 border">{item.gold}</td>
+                    <td className="px-4 py-2 border">{item.silver}</td>
+                    <td className="px-4 py-2 border">{item.bronze}</td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
         </div>
-      </div>
+      )}
     </div>
   );
-}
+};
+
+export default ReportSearch;

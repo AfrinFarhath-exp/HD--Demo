@@ -3,10 +3,13 @@ import ReportCard from "../../components/Report/ReportCard";
 import reports from "../../data/report";
 import ReturnPopup from "../../components/Report/ReportPopup";
 import ReportSearch from "../../components/Report/ReportSearch";
+import SendIcon from '@mui/icons-material/Send';
 
 export default function ReportsPage() {
   const [showModal, setShowModal] = useState(false);
   const [selectedReport, setSelectedReport] = useState("");
+  const [inputQuery, setInputQuery] = useState("");
+  const [activeQuery, setActiveQuery] = useState<string | null>(null);
   const [reportParams, setReportParams] = useState<{
     title: string;
     startDate: string;
@@ -32,12 +35,59 @@ export default function ReportsPage() {
     // TODO: Send data to backend or open a detailed report view
   };
 
+   const handleSearch = () => {
+      const q = inputQuery.trim();
+      if (!q) return;
+      setActiveQuery(q);
+      setInputQuery("");
+    };
+  
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter") handleSearch();
+    };
+  
+    // if we have an activeQuery, show the SearchPage
+    if (activeQuery !== null) {
+      return (
+        <div className="max-w-2xl mx-auto px-4">
+          <button
+            onClick={() => setActiveQuery(null)}
+            className="mb-4 text-sm text-blue-600 hover:underline"
+          >
+            ← Back
+          </button>
+          <ReportSearch query={activeQuery} />
+        </div>
+      );
+    }
+
   return (
     <div className="flex flex-col justify-center pt-24">
       <h1 className="text-4xl font-bold text-center mb-6">Reports</h1>
 
 
-      <ReportSearch/>
+      <div className="max-w-2xl mx-auto px-4">
+            <div className="flex justify-center mt-10">
+              <div className="relative w-full">
+                <input
+                  type="text"
+                  value={inputQuery}
+                  onChange={(e) => setInputQuery(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Ask me Anything..."
+                  className="w-full pr-10 pl-4 py-2 border rounded-lg shadow-sm focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={handleSearch}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                >
+                  <SendIcon className="h-5 w-5 text-primary" />
+                </button>
+              </div>
+            </div>
+          </div>
+
 
       <div className="flex flex-wrap justify-center gap-4 pt-10">
         {firstRow.map((report) => (

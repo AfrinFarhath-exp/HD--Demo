@@ -4,6 +4,31 @@ interface SearchResultProps {
   query: string;
 }
 
+interface Country {
+  id: number;
+  name: string;
+}
+
+interface Sport {
+  id: number;
+  name: string;
+}
+
+interface RawPerformance {
+  id: number;
+  countryId: number;
+  sportId: number;
+  gold: number;
+  silver: number;
+  bronze: number;
+}
+
+interface ApiResponse {
+  countries: Country[];
+  sports: Sport[];
+  performances: RawPerformance[];
+}
+
 interface CountryPerformance {
   country: string;
   sport: string;
@@ -12,7 +37,7 @@ interface CountryPerformance {
   bronze: number;
 }
 
-const SearchResult: React.FC<SearchResultProps> = ({ query }) => {
+const SearchPage: React.FC<SearchResultProps> = ({ query }) => {
   const [data, setData] = useState<CountryPerformance[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -20,27 +45,30 @@ const SearchResult: React.FC<SearchResultProps> = ({ query }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch("https://mocki.io/v1/090bd3c7-9197-4fb1-97cd-3deef4de47ff");
+        const res = await fetch(
+          "https://mocki.io/v1/090bd3c7-9197-4fb1-97cd-3deef4de47ff"
+        );
         if (!res.ok) throw new Error("Failed to fetch data");
-        const result = await res.json();
+        const result: ApiResponse = await res.json();
 
-        // Normalize to an array
-        const arr: any[] = Array.isArray(result)
-          ? result
-          : Array.isArray(result.performances)
-          ? result.performances
-          : [];
-
-        // Filter out any malformed items
-        const clean = arr.filter(item =>
-          typeof item.country === "string" &&
-          typeof item.sport === "string" &&
-          typeof item.gold === "number" &&
-          typeof item.silver === "number" &&
-          typeof item.bronze === "number"
+        // Build lookup maps
+        const countryMap = new Map<number, string>(
+          result.countries.map((c) => [c.id, c.name])
+        );
+        const sportMap = new Map<number, string>(
+          result.sports.map((s) => [s.id, s.name])
         );
 
-        setData(clean);
+        // Enrich performances
+        const enriched: CountryPerformance[] = result.performances.map((p) => ({
+          country: countryMap.get(p.countryId) || "Unknown country",
+          sport: sportMap.get(p.sportId) || "Unknown sport",
+          gold: p.gold,
+          silver: p.silver,
+          bronze: p.bronze,
+        }));
+
+        setData(enriched);
       } catch (err: any) {
         setError(err.message || "Something went wrong");
       } finally {
@@ -51,7 +79,7 @@ const SearchResult: React.FC<SearchResultProps> = ({ query }) => {
     fetchData();
   }, []);
 
-  const q = query.toLowerCase();
+  const q = query.trim().toLowerCase();
 
   return (
     <div className="mt-4 text-center">
@@ -74,7 +102,7 @@ const SearchResult: React.FC<SearchResultProps> = ({ query }) => {
             </thead>
             <tbody>
               {data
-                .filter(item =>
+                .filter((item) =>
                   item.country.toLowerCase().includes(q) ||
                   item.sport.toLowerCase().includes(q)
                 )
@@ -95,4 +123,4 @@ const SearchResult: React.FC<SearchResultProps> = ({ query }) => {
   );
 };
 
-export default SearchResult;
+export default SearchPage;
