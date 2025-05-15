@@ -14,7 +14,7 @@ const reports = [
 
 export default function ReportsPage() {
   return (
-    <div > 
+    <div className="flex flex-col justify-center pt-24">
       <h1 className="text-4xl font-bold text-center mb-8">Reports</h1>
 
       <div className="flex justify-center mb-4">
