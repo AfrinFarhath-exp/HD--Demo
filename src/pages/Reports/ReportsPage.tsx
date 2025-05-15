@@ -6,6 +6,11 @@ import ReturnPopup from "../../components/Report/ReportPopup";
 export default function ReportsPage() {
   const [showModal, setShowModal] = useState(false);
   const [selectedReport, setSelectedReport] = useState("");
+  const [reportParams, setReportParams] = useState<{
+    title: string;
+    startDate: string;
+    endDate: string;
+  } | null>(null);
 
   const firstRow = reports.slice(0, 5);
   const secondRow = reports.slice(5);
@@ -13,6 +18,17 @@ export default function ReportsPage() {
   const handleCardClick = (title: string) => {
     setSelectedReport(title);
     setShowModal(true);
+  };
+
+  const handleViewReport = (data: {
+    title: string;
+    startDate: string;
+    endDate: string;
+  }) => {
+    console.log("Report Data Submitted:", data);
+    setReportParams(data);
+    setShowModal(false);
+    // TODO: Send data to backend or open a detailed report view
   };
 
   return (
@@ -54,13 +70,16 @@ export default function ReportsPage() {
       </p>
 
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[100]">
           <ReturnPopup
             title={selectedReport}
             handleClose={() => setShowModal(false)}
+            onViewReport={handleViewReport}
           />
         </div>
       )}
+
+     
     </div>
   );
 }
