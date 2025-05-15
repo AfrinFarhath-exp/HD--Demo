@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ChatMessage from './ChatMessage';
-import type{ Message, IdocIssue, SuggestedQuestion } from '../../types';
+import type { Message, IdocIssue, SuggestedQuestion } from '../../types';
 import { Send, Paperclip } from 'lucide-react';
 import IdocIssueCard from './IdocIssueCard';
 import { v4 as uuidv4 } from 'uuid';
@@ -12,11 +12,11 @@ interface ChatContainerProps {
   idocIssues: IdocIssue[];
 }
 
-const ChatContainer: React.FC<ChatContainerProps> = ({ 
+const ChatContainer: React.FC<ChatContainerProps> = ({
   selectedIdocIssue,
   searchQuery,
   selectedQuestion,
-  idocIssues
+  idocIssues,
 }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -71,7 +71,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
       role: 'user',
       timestamp: new Date(),
     };
-    setMessages(prev => [...prev, newMessage]);
+    setMessages((prev) => [...prev, newMessage]);
     setInput('');
   };
 
@@ -83,20 +83,21 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
       timestamp: new Date(),
       isLoading: true,
     };
-    
-    setMessages(prev => [...prev, loadingMessage]);
-    
+
+    setMessages((prev) => [...prev, loadingMessage]);
+
     setTimeout(() => {
-      setMessages(prev => prev.filter(msg => !msg.isLoading));
-      
+      setMessages((prev) => prev.filter((msg) => !msg.isLoading));
+
       const responseMessage: Message = {
         id: uuidv4(),
-        content: "What specific Idoc issue are you referring to? Here are some common issues:",
+        content:
+          "What specific Idoc issue are you referring to? Here are some common issues:",
         role: 'assistant',
         timestamp: new Date(),
       };
-      
-      setMessages(prev => [...prev, responseMessage]);
+
+      setMessages((prev) => [...prev, responseMessage]);
       setShowIdocIssues(true);
     }, 1500);
   };
@@ -109,35 +110,35 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
       timestamp: new Date(),
       isLoading: true,
     };
-    
-    setMessages(prev => [...prev, loadingMessage]);
-    
+
+    setMessages((prev) => [...prev, loadingMessage]);
+
     setTimeout(() => {
-      setMessages(prev => prev.filter(msg => !msg.isLoading));
-      
+      setMessages((prev) => prev.filter((msg) => !msg.isLoading));
+
       const responseMessage: Message = {
         id: uuidv4(),
         content: `I'll help you find information about "${query}". Let me search our knowledge base...`,
         role: 'assistant',
         timestamp: new Date(),
       };
-      
-      setMessages(prev => [...prev, responseMessage]);
+
+      setMessages((prev) => [...prev, responseMessage]);
     }, 1500);
   };
 
   const handleIdocIssueSelection = (issue: IdocIssue) => {
     setShowIdocIssues(false);
-    
+
     const userSelectionMessage: Message = {
       id: uuidv4(),
       content: `I'm having an issue with: ${issue.title}`,
       role: 'user',
       timestamp: new Date(),
     };
-    
-    setMessages(prev => [...prev, userSelectionMessage]);
-    
+
+    setMessages((prev) => [...prev, userSelectionMessage]);
+
     const loadingMessage: Message = {
       id: uuidv4(),
       content: '',
@@ -145,33 +146,33 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
       timestamp: new Date(),
       isLoading: true,
     };
-    
-    setMessages(prev => [...prev, loadingMessage]);
-    
+
+    setMessages((prev) => [...prev, loadingMessage]);
+
     setTimeout(() => {
-      setMessages(prev => prev.filter(msg => !msg.isLoading));
-      
+      setMessages((prev) => prev.filter((msg) => !msg.isLoading));
+
       const solutionMessage: Message = {
         id: uuidv4(),
         content: `${issue.solution}\n\nIs there anything else I can help you with?`,
         role: 'assistant',
         timestamp: new Date(),
       };
-      
-      setMessages(prev => [...prev, solutionMessage]);
+
+      setMessages((prev) => [...prev, solutionMessage]);
     }, 2000);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
-    
+
     handleUserMessage(input);
-    
+
     if (showIdocIssues) {
       setShowIdocIssues(false);
     }
-    
+
     const loadingMessage: Message = {
       id: uuidv4(),
       content: '',
@@ -179,20 +180,20 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
       timestamp: new Date(),
       isLoading: true,
     };
-    
-    setMessages(prev => [...prev, loadingMessage]);
-    
+
+    setMessages((prev) => [...prev, loadingMessage]);
+
     setTimeout(() => {
-      setMessages(prev => prev.filter(msg => !msg.isLoading));
-      
+      setMessages((prev) => prev.filter((msg) => !msg.isLoading));
+
       const responseMessage: Message = {
         id: uuidv4(),
         content: `I'll help you with "${input}". Let me check our knowledge base...`,
         role: 'assistant',
         timestamp: new Date(),
       };
-      
-      setMessages(prev => [...prev, responseMessage]);
+
+      setMessages((prev) => [...prev, responseMessage]);
     }, 1500);
   };
 
@@ -201,15 +202,15 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   }, [messages, showIdocIssues]);
 
   return (
-    <div className="flex flex-col bg-gray-50 rounded-lg overflow-hidden h-full">
-      <div className="flex-1 overflow-y-auto p-4">
+    <div className="flex flex-col bg-gray-50 rounded-lg overflow-hidden h-full mb-0 " >
+      <div className="flex-1 overflow-y-auto p-0">
         <div className="max-w-4xl mx-auto space-y-4">
           {messages.map((message) => (
             <ChatMessage key={message.id} message={message} />
           ))}
-          
+
           {showIdocIssues && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-0">
               {idocIssues.map((issue) => (
                 <IdocIssueCard
                   key={issue.id}
@@ -219,12 +220,12 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
               ))}
             </div>
           )}
-          
+
           <div ref={messagesEndRef} />
         </div>
       </div>
-      
-      <div className="border-t border-gray-200 bg-white p-4">
+
+      <div className="border-t border-gray-200 bg-white p-4 mt-0">
         <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
           <div className="flex items-center rounded-lg border border-gray-300 bg-white overflow-hidden">
             <button
