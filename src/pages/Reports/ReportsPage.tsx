@@ -5,15 +5,34 @@ import ReturnPopup from "../../components/Report/ReportPopup";
 
 export default function ReportsPage() {
   const [showModal, setShowModal] = useState(false);
+  const [selectedReport, setSelectedReport] = useState("");
+  const [reportParams, setReportParams] = useState<{
+    title: string;
+    startDate: string;
+    endDate: string;
+  } | null>(null);
+
   const firstRow = reports.slice(0, 5);
   const secondRow = reports.slice(5);
 
-  const handleCardClick = () => {
+  const handleCardClick = (title: string) => {
+    setSelectedReport(title);
     setShowModal(true);
   };
 
+  const handleViewReport = (data: {
+    title: string;
+    startDate: string;
+    endDate: string;
+  }) => {
+    console.log("Report Data Submitted:", data);
+    setReportParams(data);
+    setShowModal(false);
+    // TODO: Send data to backend or open a detailed report view
+  };
+
   return (
-    <div className="min-h-screen bg-[#f4f1ee] px-8 pt-32 pb-8 relative">
+    <div className="flex flex-col justify-center pt-24">
       <h1 className="text-4xl font-bold text-center mb-6">Reports</h1>
 
       <div className="flex justify-center mb-4">
@@ -29,7 +48,7 @@ export default function ReportsPage() {
           <ReportCard
             key={report.title}
             title={report.title}
-            onClick={handleCardClick}
+            onClick={() => handleCardClick(report.title)}
           />
         ))}
       </div>
@@ -41,7 +60,7 @@ export default function ReportsPage() {
           <ReportCard
             key={report.title}
             title={report.title}
-            onClick={handleCardClick}
+            onClick={() => handleCardClick(report.title)}
           />
         ))}
       </div>
@@ -50,20 +69,17 @@ export default function ReportsPage() {
         Choose the reports you need...
       </p>
 
-   
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl shadow-xl w-[90%] max-w-2xl relative">
-            <button
-              onClick={() => setShowModal(false)}
-              className="absolute top-2 right-3 text-gray-500 hover:text-gray-800 text-2xl font-bold"
-            >
-              &times;
-            </button>
-            <ReturnPopup />
-          </div>
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[100]">
+          <ReturnPopup
+            title={selectedReport}
+            handleClose={() => setShowModal(false)}
+            onViewReport={handleViewReport}
+          />
         </div>
       )}
+
+     
     </div>
   );
 }
