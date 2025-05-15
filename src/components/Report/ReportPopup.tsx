@@ -1,19 +1,33 @@
 import React, { useState } from "react";
 import { theme } from "../../theme";
-import reports from "../../data/report";
 
-const ReturnPopup = () => {
+const ReturnPopup = ({
+  title = "Returns Report",
+  handleClose,
+  onViewReport,
+}: {
+  title?: string;
+  handleClose: () => void;
+  onViewReport: (data: { title: string; startDate: string; endDate: string }) => void;
+}) => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const[title,setTitle] = useState("");
 
-  const handleViewReport = (p0: { startDate: string; endDate: string; title: any; }) => {
-    console.log("Generating report from", startDate, "to", endDate);
+  const handleViewReport = () => {
+    console.log("Generating report for:", title);
+    console.log("From:", startDate, "To:", endDate);
+
+    // Call the parent callback with the data
+    onViewReport({
+      title: title ?? "",
+      startDate,
+      endDate,
+    });
   };
-
-  return (
+return(
     <div
       style={{
+        position: "relative", // for close button
         backgroundColor: theme.colors.background,
         boxShadow: theme.shadows.lg,
         borderRadius: theme.borderRadius.lg,
@@ -23,6 +37,24 @@ const ReturnPopup = () => {
         fontFamily: theme.typography.fontFamily,
       }}
     >
+      {/* ❌ Close Button */}
+      <button
+        onClick={handleClose}
+        style={{
+          position: "absolute",
+          top: theme.spacing.sm,
+          right: theme.spacing.sm,
+          background: "transparent",
+          border: "none",
+          fontSize: "1.5rem",
+          color: theme.colors.text.primary,
+          cursor: "pointer",
+        }}
+      >
+        &times;
+      </button>
+
+      {/* Title */}
       <h2
         style={{
           fontSize: theme.typography.fontSize.xxl,
@@ -32,9 +64,10 @@ const ReturnPopup = () => {
           color: theme.colors.text.primary,
         }}
       >
-        Returns Report
+        {title}
       </h2>
 
+      {/* Date inputs */}
       <div
         style={{
           display: "grid",
@@ -96,16 +129,11 @@ const ReturnPopup = () => {
         </div>
       </div>
 
+     {/* View Report Button */}
       <div style={{ textAlign: "center" }}>
         <button
-          onClick={() =>
-            handleViewReport({
-              startDate,
-              endDate,
-              title,
-            })
-            }
-            style={{
+          onClick={handleViewReport}
+          style={{
             backgroundColor: theme.colors.primary,
             color: theme.colors.text.light,
             fontWeight: theme.typography.fontWeight.bold,
@@ -127,7 +155,7 @@ const ReturnPopup = () => {
         </button>
       </div>
     </div>
-  );
+);
 };
 
 export default ReturnPopup;
