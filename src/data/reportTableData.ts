@@ -53,7 +53,7 @@ export const reportData: {
 
       } 
       },
-      UK: {
+      CA: {
         Metrix:{
           totalNumberOfOrders:{title: 'Total Number Of Orders', value: '1,080'},
           totalVisits:{title: 'Total Visits', value: '69,450'},
@@ -123,7 +123,7 @@ export const reportData: {
 
       } 
       },
-      UK: {
+      CA: {
         Metrix:{
           totalNumberOfOrders:{title: 'Total Number Of Orders', value: '1,080'},
           totalVisits:{title: 'Total Visits', value: '69,450'},

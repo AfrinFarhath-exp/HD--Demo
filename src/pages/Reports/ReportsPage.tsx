@@ -66,9 +66,7 @@ export default function ReportsPage() {
         ))}
       </div>
 
-      <p className="text-center text-gray-500 mb-10 pt-10">
-        Choose the reports you need...
-      </p>
+      
 
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[100]">
@@ -80,7 +78,7 @@ export default function ReportsPage() {
         </div>
       )}
 {reportParams ? (
-  <div className="mt-10 px-4 sm:px-16">
+  <div className="mt-10 px-4 sm:px-16 pb-10">
     
     <ReusableReportTable
       reportName={reportParams.title}
@@ -88,10 +86,10 @@ export default function ReportsPage() {
       endDate={reportParams.endDate}
     />
   </div>
-) : (
-  <p className="text-center text-gray-500 mb-10 pt-10">No data to display</p>
-)}
-
+) : null}
+<p className="text-center text-gray-500 mb-10 pt-10">
+        Choose the reports you need...
+      </p>
      
     </div>
   );
