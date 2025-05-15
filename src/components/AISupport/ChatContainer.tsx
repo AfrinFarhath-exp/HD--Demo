@@ -202,15 +202,15 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   }, [messages, showIdocIssues]);
 
   return (
-    <div className="flex flex-col bg-gray-50 rounded-lg overflow-hidden h-full">
-      <div className="flex-1 overflow-y-auto p-4">
+    <div className="flex flex-col bg-gray-50 rounded-lg overflow-hidden h-full mb-0 " >
+      <div className="flex-1 overflow-y-auto p-0">
         <div className="max-w-4xl mx-auto space-y-4">
           {messages.map((message) => (
             <ChatBubble key={message.id} message={message} />
           ))}
 
           {showIdocIssues && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-0">
               {idocIssues.map((issue) => (
                 <IdocIssueCard
                   key={issue.id}
