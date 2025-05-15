@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import ReportCard from "../../components/Report/ReportCard";
 import reports from "../../data/report";
 import ReturnPopup from "../../components/Report/ReportPopup";
+import ReusableReportTable from "../../components/Report/ReusableReportTable";
 import ReportSearch from "../../components/Report/ReportSearch";
 import SendIcon from '@mui/icons-material/Send';
 
@@ -32,39 +33,8 @@ export default function ReportsPage() {
     console.log("Report Data Submitted:", data);
     setReportParams(data);
     setShowModal(false);
-    // TODO: Send data to backend or open a detailed report view
+    
   };
-
-  const handleSearch = () => {
-    const q = inputQuery.trim();
-    if (!q) return;
-    setActiveQuery(q);
-    setInputQuery("");
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") handleSearch();
-  };
-
-  // if we have an activeQuery, show the SearchPage
-  if (activeQuery !== null) {
-    return (
-      <div className="h-screen flex flex-col">
-        <div className="bg-white shadow-sm p-4 flex fixed items-center">
-          <button
-            onClick={() => setActiveQuery(null)}
-            className="text-primary hover:underline flex items-center"
-          >
-            <span className="mr-1">←</span> Back to Reports
-          </button>
-        </div>
-        
-        <div className="flex-1 overflow-hidden">
-          <ReportSearch query={activeQuery} />
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="flex flex-col justify-center pt-24">
@@ -114,9 +84,7 @@ export default function ReportsPage() {
         ))}
       </div>
 
-      <p className="text-center text-gray-500 mb-10 pt-10">
-        Choose the reports you need or ask a question above...
-      </p>
+      
 
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[100]">
@@ -127,6 +95,20 @@ export default function ReportsPage() {
           />
         </div>
       )}
+{reportParams ? (
+  <div className="mt-10 px-4 sm:px-16 pb-10">
+    
+    <ReusableReportTable
+      reportName={reportParams.title}
+      startDate={reportParams.startDate}
+      endDate={reportParams.endDate}
+    />
+  </div>
+) : null}
+<p className="text-center text-gray-500 mb-10 pt-10">
+        Choose the reports you need...
+      </p>
+     
     </div>
   );
 }
