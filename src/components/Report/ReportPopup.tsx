@@ -4,9 +4,11 @@ import { theme } from "../../theme";
 const ReturnPopup = ({
   title = "Returns Report",
   handleClose,
+  onViewReport,
 }: {
   title?: string;
   handleClose: () => void;
+  onViewReport: (data: { title: string; startDate: string; endDate: string }) => void;
 }) => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -14,10 +16,15 @@ const ReturnPopup = ({
   const handleViewReport = () => {
     console.log("Generating report for:", title);
     console.log("From:", startDate, "To:", endDate);
-    // You can trigger actual report logic here
-  };
 
-  return (
+    // Call the parent callback with the data
+    onViewReport({
+      title: title ?? "",
+      startDate,
+      endDate,
+    });
+  };
+return(
     <div
       style={{
         position: "relative", // for close button
@@ -122,7 +129,7 @@ const ReturnPopup = ({
         </div>
       </div>
 
-      {/* View Report Button */}
+     {/* View Report Button */}
       <div style={{ textAlign: "center" }}>
         <button
           onClick={handleViewReport}
@@ -148,7 +155,7 @@ const ReturnPopup = ({
         </button>
       </div>
     </div>
-  );
+);
 };
 
 export default ReturnPopup;
