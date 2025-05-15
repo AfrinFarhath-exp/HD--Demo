@@ -1,14 +1,13 @@
 import React from 'react';
-import { HelpCircle, BarChart2, FileText } from 'lucide-react';
+import { BarChart2, FileText, MessageSquareText } from 'lucide-react';
 import { theme } from "../../theme";
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const SideNav: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  
   const navItems = [
-    { icon: <HelpCircle size={24} />, label: 'AI Support', path: '/ai-support' },
+    { icon: <MessageSquareText size={24} />, label: 'AI Support', path: '/ai-support' },
     { icon: <FileText size={24} />, label: 'Reports', path: '/reports' },
     { icon: <BarChart2 size={24} />, label: 'Metrics', path: '/metrics' },
   ];
@@ -20,7 +19,7 @@ const SideNav: React.FC = () => {
       <div className="py-6 px-4">
         <div className="text-primary font-bold text-2xl relative h-6">
           <span className="block group-hover:opacity-0 transition-opacity duration-700 ease-in-out">H-D</span>
-          <span className="absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-in-out">Harley-Davidson</span>
+          <span className="absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-in-out">H-D</span>
         </div>
       </div>
       
