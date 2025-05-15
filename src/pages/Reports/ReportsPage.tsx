@@ -17,18 +17,19 @@ export default function ReportsPage() {
       <div className="flex justify-center mb-4">
         <input
           type="text"
-          placeholder="Search the reports..."
+          placeholder="Ask me Anything.."
           className="w-full sm:w-1/2 px-4 py-2 border rounded-lg shadow-sm focus:outline-none"
         />
       </div>
 
-      <p className="text-center text-gray-500 mb-10">Choose the reports you need...</p> 
+      
 
       <div className="flex flex-wrap gap-4 justify-center pt-10">
         {reports.map((title) => (
           <ReportCard key={title} title={title} />
         ))}
       </div>
+      <p className="text-center text-gray-500 mb-10 pt-10">Choose the reports you need...</p> 
     </div>
   );
 }
