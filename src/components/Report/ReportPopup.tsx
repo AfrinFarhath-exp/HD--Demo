@@ -5,7 +5,7 @@ const ReturnsReport = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  const handleViewReport = () => {
+  const handleViewReport = (p0: { startDate: string; endDate: string; title: any; }) => {
     console.log("Generating report from", startDate, "to", endDate);
   };
 
@@ -96,8 +96,14 @@ const ReturnsReport = () => {
 
       <div style={{ textAlign: "center" }}>
         <button
-          onClick={handleViewReport}
-          style={{
+          onClick={() =>
+            handleViewReport({
+              startDate,
+              endDate,
+              title,
+            })
+                 }
+            style={{
             backgroundColor: theme.colors.primary,
             color: theme.colors.text.light,
             fontWeight: theme.typography.fontWeight.bold,
