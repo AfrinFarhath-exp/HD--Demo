@@ -1,17 +1,19 @@
-import React from 'react';
-import type { Message } from '../../types';
-import { ThumbsUp, ThumbsDown, Copy, Share } from 'lucide-react';
+import React from "react";
+import type { Message } from "../../types";
+import { ThumbsUp, ThumbsDown, Copy, Share } from "lucide-react";
 
 interface ChatMessageProps {
   message: Message;
 }
 
 const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
-  const isAssistant = message.role === 'assistant';
+  const isAssistant = message.role === "assistant";
 
   if (message.isLoading) {
     return (
-      <div className={`px-6 py-4 ${isAssistant ? 'bg-white' : ''} animate-pulse`}>
+      <div
+        className={`px-6 py-4 ${isAssistant ? "bg-white" : ""} animate-pulse`}
+      >
         <div className="flex items-center space-x-2">
           <div className="w-6 h-6 relative">
             {isAssistant ? (
@@ -26,7 +28,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
           </div>
           <div className="flex-1">
             <div className="text-sm text-gray-500 mb-2">
-              {isAssistant ? 'AI thinking...' : 'Sending message...'}
+              {isAssistant ? "AI thinking..." : "Sending message..."}
             </div>
             <div className="space-y-2">
               <div className="w-3/4 h-4 bg-gray-200 rounded"></div>
@@ -39,7 +41,9 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
   }
 
   return (
-    <div className={`px-6 py-4 ${isAssistant ? 'bg-white' : ''} animate-slideIn`}>
+    <div
+      className={`px-6 py-4 ${isAssistant ? "bg-white" : ""} animate-slideIn`}
+    >
       <div className="flex items-start space-x-4">
         <div className="w-6 h-6 mt-1">
           {isAssistant ? (
@@ -54,10 +58,18 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
         </div>
         <div className="flex-1">
           <div className="text-sm text-gray-600">
-            {isAssistant ? 'Assistant' : 'You'} • {new Date(message.timestamp).toLocaleTimeString()}
+            {isAssistant ? "Assistant" : "You"} •{" "}
+            {new Date(message.timestamp).toLocaleTimeString()}
           </div>
-          <div className="mt-1">{message.content}</div>
-          
+          {/* <div className="mt-1">{message.content}</div> */}
+          {message?.content && (
+            <div className="mt-1">
+              {message.content.split("\n").map((line, index) => (
+                <div key={index}>{line}</div>
+              ))}
+            </div>
+          )}
+
           {isAssistant && (
             <div className="mt-4 flex items-center space-x-2">
               <button className="p-1 rounded-full hover:bg-gray-100 transition-colors">
