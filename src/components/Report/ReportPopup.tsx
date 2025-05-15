@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { theme } from "../../theme";
 
-const ReturnsReport = () => {
+const ReturnPopup = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
@@ -122,4 +122,4 @@ const ReturnsReport = () => {
   );
 };
 
-export default ReturnsReport;
+export default ReturnPopup;
