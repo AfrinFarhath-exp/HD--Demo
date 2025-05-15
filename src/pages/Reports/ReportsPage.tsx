@@ -54,7 +54,7 @@ export default function ReportsPage() {
       </p>
 
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-100">
           <ReturnPopup
             title={selectedReport}
             handleClose={() => setShowModal(false)}
