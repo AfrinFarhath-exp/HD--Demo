@@ -1,49 +1,4 @@
 
-// export const reportData: {
-//   [reportName: string]: {
-//     [date: string]: {
-//       [country: string]: {
-//         Metrix: {
-//           [metric: string]: {
-//             title: string;
-//             value: string;
-//           };
-//         };
-//       };
-//     };
-//   };
-// } = {
-//   report1: {
-//     "5/12/2025": {
-//       US: {
-//         Metrix: {
-//           pen: { title: "Total Number Of pen", value: "1,080" },
-//           book: { title: "Total book", value: "$69,450" }
-//         }
-//       },
-//       UK: {
-//         Metrix: {
-//           pen: { title: "Total Number Of pen", value: "1,080" },
-//           book: { title: "Total book", value: "$69,450" }
-//         }
-//       }
-//     },
-//     "5/13/2025": {
-//       US: {
-//         Metrix: {
-//           pen: { title: "Total Number Of pen", value: "1,900" },
-//           book: { title: "Total book", value: "$620,450" }
-//         }
-//       },
-//       UK: {
-//         Metrix: {
-//           pen: { title: "Total Number Of pen", value: "1,080" },
-//           book: { title: "Total book", value: "$69,450" }
-//         }
-//       }
-//     }
-//   }
-// };
 
 
 
@@ -62,8 +17,8 @@ export const reportData: {
     };
   };
 } = {
-  report1: {
-    "5/12/2025": {
+  Backorder_Weekly_Report: {
+    "2025-05-13": {
       US: {
         Metrix:{
           totalNumberOfOrders:{title: 'Total Number Of Orders', value: '1,080'},
@@ -133,7 +88,7 @@ export const reportData: {
       } 
       }
     },
-    "5/13/2025": {
+    "2025-05-14": {
       US: {
         Metrix:{
           totalNumberOfOrders:{title: 'Total Number Of Orders', value: '1,080'},
