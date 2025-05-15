@@ -35,59 +35,62 @@ export default function ReportsPage() {
     // TODO: Send data to backend or open a detailed report view
   };
 
-   const handleSearch = () => {
-      const q = inputQuery.trim();
-      if (!q) return;
-      setActiveQuery(q);
-      setInputQuery("");
-    };
-  
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === "Enter") handleSearch();
-    };
-  
-    // if we have an activeQuery, show the SearchPage
-    if (activeQuery !== null) {
-      return (
-        <div className="max-w-2xl mx-auto px-4">
+  const handleSearch = () => {
+    const q = inputQuery.trim();
+    if (!q) return;
+    setActiveQuery(q);
+    setInputQuery("");
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") handleSearch();
+  };
+
+  // if we have an activeQuery, show the SearchPage
+  if (activeQuery !== null) {
+    return (
+      <div className="h-screen flex flex-col">
+        <div className="bg-white shadow-sm p-4 flex fixed items-center">
           <button
             onClick={() => setActiveQuery(null)}
-            className="mb-4 text-sm text-blue-600 hover:underline"
+            className="text-primary hover:underline flex items-center"
           >
-            ← Back
+            <span className="mr-1">←</span> Back to Reports
           </button>
+        </div>
+        
+        <div className="flex-1 overflow-hidden">
           <ReportSearch query={activeQuery} />
         </div>
-      );
-    }
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col justify-center pt-24">
       <h1 className="text-4xl font-bold text-center mb-6">Reports</h1>
 
-
-      <div className="max-w-2xl mx-auto px-4">
-            <div className="flex justify-center mt-10">
-              <div className="relative w-full">
-                <input
-                  type="text"
-                  value={inputQuery}
-                  onChange={(e) => setInputQuery(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder="Ask me Anything..."
-                  className="w-full pr-10 pl-4 py-2 border rounded-lg shadow-sm focus:outline-none"
-                />
-                <button
-                  type="button"
-                  onClick={handleSearch}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
-                >
-                  <SendIcon className="h-5 w-5 text-primary" />
-                </button>
-              </div>
-            </div>
+      <div className="w-full px-4">
+        <div className="flex justify-center mt-10">
+          <div className="relative w-full max-w-2xl">
+            <input
+              type="text"
+              value={inputQuery}
+              onChange={(e) => setInputQuery(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Ask me anything about the reports..."
+              className="w-full pr-12 pl-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-500"
+            />
+            <button
+              type="button"
+              onClick={handleSearch}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-blue-600"
+            >
+              <SendIcon className="text-primary h-5 w-5" />
+            </button>
           </div>
-
+        </div>
+      </div>
 
       <div className="flex flex-wrap justify-center gap-4 pt-10">
         {firstRow.map((report) => (
@@ -112,7 +115,7 @@ export default function ReportsPage() {
       </div>
 
       <p className="text-center text-gray-500 mb-10 pt-10">
-        Choose the reports you need...
+        Choose the reports you need or ask a question above...
       </p>
 
       {showModal && (
@@ -124,8 +127,6 @@ export default function ReportsPage() {
           />
         </div>
       )}
-
-     
     </div>
   );
 }
