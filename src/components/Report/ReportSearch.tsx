@@ -2,15 +2,49 @@ import React, { useEffect, useState, useRef } from "react";
 import { MessageCircle, Send } from "lucide-react";
 import ReusableReportTable from "./ReusableReportTable";
 
-const ThinkingIndicator = ({ isThinking = false }) => {
+// Type Definitions
+interface Message {
+  text: string;
+  isUser: boolean;
+  timestamp: Date;
+  showDisplay?: boolean;
+  reportComponent?: React.ReactNode;
+}
+
+interface ThinkingIndicatorProps {
+  isThinking?: boolean;
+}
+
+interface ChatBubbleProps {
+  message: Message;
+  reportComponent?: React.ReactNode;
+}
+
+interface ReportSearchProps {
+  query?: string;
+}
+
+// Thinking Indicator Component
+const ThinkingIndicator: React.FC<ThinkingIndicatorProps> = ({ isThinking = false }) => {
   if (!isThinking) return null;
 
   return (
     <div className="flex items-center justify-start p-3 mb-4">
       <div className="flex-shrink-0 mr-3">
         <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white shadow-md">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+            ></path>
           </svg>
         </div>
       </div>
@@ -26,9 +60,10 @@ const ThinkingIndicator = ({ isThinking = false }) => {
   );
 };
 
-const ChatBubble = ({ message, reportComponent }) => {
-  const formatTime = (date) => {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+// Chat Bubble Component
+const ChatBubble: React.FC<ChatBubbleProps> = ({ message, reportComponent }) => {
+  const formatTime = (date: Date): string => {
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
   return (
@@ -60,15 +95,16 @@ const ChatBubble = ({ message, reportComponent }) => {
   );
 };
 
-const ReportSearch = ({ query }) => {
-  const [loading, setLoading] = useState(false);
-  const [messages, setMessages] = useState([]);
-  const [inputMessage, setInputMessage] = useState("");
-  const messagesEndRef = useRef(null);
-  const chatContainerRef = useRef(null);
-  const hasHandledInitialQuery = useRef(false); // Prevent double response
+// Main Chat Component
+const ReportSearch: React.FC<ReportSearchProps> = ({ query }) => {
+  const [loading, setLoading] = useState<boolean>(false);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [inputMessage, setInputMessage] = useState<string>("");
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const chatContainerRef = useRef<HTMLDivElement | null>(null);
+  const hasHandledInitialQuery = useRef<boolean>(false);
 
-  const generateBotResponse = (message) => {
+  const generateBotResponse = (message: string): { botResponse: Message; reportComponent: React.ReactNode | null } => {
     if (message.trim().toLowerCase().includes("sac")) {
       return {
         botResponse: {
@@ -78,11 +114,7 @@ const ReportSearch = ({ query }) => {
           showDisplay: true,
         },
         reportComponent: (
-          <ReusableReportTable
-            reportName="SAC Report"
-            startDate="2025-05-13"
-            endDate="2025-05-14"
-          />
+          <ReusableReportTable reportName="SAC Report" startDate="2025-05-13" endDate="2025-05-14" />
         ),
       };
     } else {
@@ -101,7 +133,7 @@ const ReportSearch = ({ query }) => {
     if (query && !hasHandledInitialQuery.current) {
       hasHandledInitialQuery.current = true;
 
-      const userMessage = {
+      const userMessage: Message = {
         text: query,
         isUser: true,
         timestamp: new Date(),
@@ -126,13 +158,17 @@ const ReportSearch = ({ query }) => {
   }, [query]);
 
   useEffect(() => {
+  const scrollTimeout = setTimeout(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, 50); // Wait a bit to allow DOM to render
 
-  const handleSendMessage = () => {
+  return () => clearTimeout(scrollTimeout);
+}, [messages]);
+
+  const handleSendMessage = (): void => {
     if (!inputMessage.trim()) return;
 
-    const userMessage = {
+    const userMessage: Message = {
       text: inputMessage,
       isUser: true,
       timestamp: new Date(),
@@ -149,43 +185,51 @@ const ReportSearch = ({ query }) => {
     }, 1500);
   };
 
-  const handleKeyPress = (e) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>): void => {
     if (e.key === "Enter") {
       handleSendMessage();
     }
   };
 
   return (
-    <div className="flex flex-col bg-gray-50 rounded-lg shadow-md overflow-clip h-full">
-      <div className="flex-1 p-4 overflow-y-auto bg-gray-50" ref={chatContainerRef}>
-        {messages.map((message, index) => (
-          <ChatBubble key={index} message={message} reportComponent={message.reportComponent} />
-        ))}
+  <div className="relative  bg-gray-50  shadow-md ">
+    <div
+      ref={chatContainerRef}
+      className="overflow-y-auto pb-24 px-4 pt-4"
+      // style={{ height: "100vh" }} 
+    >
+      {messages.map((message, index) => (
+        <ChatBubble key={index} message={message} reportComponent={message.reportComponent} />
+      ))}
 
-        <ThinkingIndicator isThinking={loading} />
-        <div ref={messagesEndRef} />
-      </div>
+      <ThinkingIndicator isThinking={loading} />
+      <div ref={messagesEndRef} />
+    </div>
 
-      <div className="border-t border-gray-200 px-4 py-3 bg-white rounded-b-lg sticky bottom-0">
-        <div className="flex items-center">
-          <input
-            type="text"
-            value={inputMessage}
-            onChange={(e) => setInputMessage(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Search more reports..."
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-gray-200 shadow-sm"
-          />
-          <button
-            onClick={handleSendMessage}
-            className="ml-2 p-3 bg-primary text-white rounded-full hover:bg-primary focus:outline-none focus:ring-2 focus:bg-primary shadow-md"
-          >
-            <Send size={20} />
-          </button>
-        </div>
+    {/* Fixed input at bottom */}
+    <div className="fixed bottom-0 left-1/3 transform -translate-x-1/4 px-10 py-4 shadow-lg w-full max-w-8xl">
+     <div className="flex  items-center gap-6 max-w-6xl mx-auto">
+        <input
+          type="text"
+          value={inputMessage}
+          onChange={(e) => setInputMessage(e.target.value)}
+          onKeyPress={handleKeyPress}
+          placeholder="Search more reports..."
+          className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-gray-200 shadow-sm"
+        />
+        <button
+          onClick={handleSendMessage}
+          className="ml-2 p-3 bg-primary text-white rounded-full hover:bg-primary focus:outline-none focus:ring-2 focus:bg-primary shadow-md"
+        >
+          <Send size={20} />
+        </button>
       </div>
     </div>
-  );
+  </div>
+);
+
+
+
 };
 
 export default ReportSearch;
