@@ -17,9 +17,9 @@ export default function ReportCard({ title, onClick }: ReportCardProps) {
         maxWidth: 300,
         backgroundColor: "#f5f5f5",
         cursor: "pointer",
-        transition: "transform 0.3s ease",
+        
         "&:hover": {
-          transform: "scale(1.07)",
+          
         },
         "&::before": {
           content: '""',
@@ -28,8 +28,7 @@ export default function ReportCard({ title, onClick }: ReportCardProps) {
           left: 0,
           width: "100%",
           height: "100%",
-          background: "linear-gradient(to bottom, rgba(255, 153, 0, 0.2), transparent)",
-          transition: "top 0.4s ease-in-out",
+         
           zIndex: 0,
         },
         "&:hover::before": {
@@ -41,7 +40,7 @@ export default function ReportCard({ title, onClick }: ReportCardProps) {
         onClick={onClick}
         sx={{
           position: "relative",
-          p: 1.5,
+          p: 1.25,
           zIndex: 1,
         }}
       >
@@ -49,9 +48,9 @@ export default function ReportCard({ title, onClick }: ReportCardProps) {
           <FileText style={{ color: "#EA580C", width: 20, height: 20 }} />
           <Typography
             variant="body2"
-            fontWeight={600}
+            fontWeight={400}
             color="text.primary"
-            sx={{ fontSize: "0.875rem" }}
+            sx={{ fontSize: "0.825rem" }}
           >
             {title}
           </Typography>
