@@ -3,9 +3,8 @@ import ReportCard from "../../components/Report/ReportCard";
 import reports from "../../data/report";
 import ReturnPopup from "../../components/Report/ReportPopup";
 import ReusableReportTable from "../../components/Report/ReusableReportTable";
-import SendIcon from '@mui/icons-material/Send';
-import ReportSearch from "../../components/Report/ReportSearch";
 import SendIcon from '@mui/icons-material/send';
+import ReportSearch from "../../components/Report/ReportSearch";
 
 
 export default function ReportsPage() {
