@@ -4,7 +4,7 @@ import ReusableReportTable from "./ReusableReportTable";
 
 const ThinkingIndicator = ({ isThinking = false }) => {
   if (!isThinking) return null;
-  
+
   return (
     <div className="flex items-center justify-start p-3 mb-4">
       <div className="flex-shrink-0 mr-3">
@@ -14,7 +14,7 @@ const ThinkingIndicator = ({ isThinking = false }) => {
           </svg>
         </div>
       </div>
-      
+
       <div className="relative max-w-xs md:max-w-md lg:max-w-lg bg-gray-100 text-gray-800 px-4 py-3 rounded-xl rounded-bl-none shadow-sm">
         <div className="flex space-x-1">
           <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }}></div>
@@ -26,7 +26,6 @@ const ThinkingIndicator = ({ isThinking = false }) => {
   );
 };
 
-// Chat Bubble Component
 const ChatBubble = ({ message, reportComponent }) => {
   const formatTime = (date) => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -48,7 +47,7 @@ const ChatBubble = ({ message, reportComponent }) => {
             message.isUser
               ? "bg-primary text-white rounded-br-none shadow-md"
               : "bg-gray-100 text-gray-800 rounded-bl-none shadow-sm"
-            }`}
+          }`}
         >
           <p className="text-sm whitespace-pre-wrap">{message.text}</p>
           {message.showDisplay && reportComponent}
@@ -67,40 +66,61 @@ const ReportSearch = ({ query }) => {
   const [inputMessage, setInputMessage] = useState("");
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
+  const hasHandledInitialQuery = useRef(false); // Prevent double response
 
-  useEffect(function() {
-    if (query) {
-      setMessages([
-        {
-          text: query,
-          isUser: true,
-          timestamp: new Date()
-        }
-      ]);
-      
-      // Add bot response after user's initial query
-      setTimeout(function() {
-        setMessages(function(prevMessages) {
-          return [
-            ...prevMessages,
-            {
-              text: "Hello! Here is the report you requested:",
-              isUser: false,
-              timestamp: new Date(),
-              showDisplay: true,
-              reportComponent: <ReusableReportTable reportName={"SAC Report"} startDate={"2025-05-13"} endDate={"2025-05-14"} />,
-            }
-          ];
-        });
-      }, 500);
+  const generateBotResponse = (message) => {
+    if (message.trim().toLowerCase().includes("sac")) {
+      return {
+        botResponse: {
+          text: "Here is the report you requested:",
+          isUser: false,
+          timestamp: new Date(),
+          showDisplay: true,
+        },
+        reportComponent: (
+          <ReusableReportTable
+            reportName="SAC Report"
+            startDate="2025-05-13"
+            endDate="2025-05-14"
+          />
+        ),
+      };
     } else {
-      // Set initial message if no query
+      return {
+        botResponse: {
+          text: `I don't have information about "${message}". Enter a valid report name`,
+          isUser: false,
+          timestamp: new Date(),
+        },
+        reportComponent: null,
+      };
+    }
+  };
+
+  useEffect(() => {
+    if (query && !hasHandledInitialQuery.current) {
+      hasHandledInitialQuery.current = true;
+
+      const userMessage = {
+        text: query,
+        isUser: true,
+        timestamp: new Date(),
+      };
+      setMessages([userMessage]);
+
+      setLoading(true);
+      setTimeout(() => {
+        const { botResponse, reportComponent } = generateBotResponse(query);
+        setMessages((prev) => [...prev, { ...botResponse, reportComponent }]);
+        setLoading(false);
+      }, 1500);
+    } else if (!query) {
       setMessages([
         {
           text: "Hello! How can I help you today?",
           isUser: false,
-          timestamp: new Date()
-        }
+          timestamp: new Date(),
+        },
       ]);
     }
   }, [query]);
@@ -112,80 +132,46 @@ const ReportSearch = ({ query }) => {
   const handleSendMessage = () => {
     if (!inputMessage.trim()) return;
 
-    // Add user message
     const userMessage = {
       text: inputMessage,
       isUser: true,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
-    setMessages(function(prev) {
-      return [...prev, userMessage];
-    });
-    
+    setMessages((prev) => [...prev, userMessage]);
     setInputMessage("");
-
-    // Simulate bot response with thinking indicator
     setLoading(true);
-    setTimeout(function() {
-      let botResponse;
-      let reportComponent = null;
-    if (inputMessage.trim().toLowerCase().includes("sac")) {
-  botResponse = {
-    text: "Here is the report you requested:",
-    isUser: false,
-    timestamp: new Date(),
-    showDisplay: true,
-  };
-  reportComponent = (
-    <ReusableReportTable reportName="SAC Report" startDate="2025-05-13" endDate="2025-05-14" />
-  );
-} else {
-  botResponse = {
-    text: `I don't have information about "${inputMessage}". Enter a valid report name`,
-    isUser: false,
-    timestamp: new Date(),
-  };
-}
 
-      
-      setMessages(function(prevMessages) {
-        return [...prevMessages, { ...botResponse, reportComponent }];
-      });
-      
+    setTimeout(() => {
+      const { botResponse, reportComponent } = generateBotResponse(inputMessage);
+      setMessages((prev) => [...prev, { ...botResponse, reportComponent }]);
       setLoading(false);
-    }, 2000); // Longer delay to see the thinking indicator
+    }, 1500);
   };
 
-  const handleKeyPress = function(e) {
-    if (e.key === 'Enter') {
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") {
       handleSendMessage();
     }
   };
 
   return (
     <div className="flex flex-col bg-gray-50 rounded-lg shadow-md overflow-clip h-full">
-      {/* Chat messages */}
       <div className="flex-1 p-4 overflow-y-auto bg-gray-50" ref={chatContainerRef}>
-        {messages.map(function(message, index) {
-          return (
-            <ChatBubble key={index} message={message} reportComponent={message.reportComponent} />
-          );
-        })}
-        
-        {/* Thinking indicator */}
+        {messages.map((message, index) => (
+          <ChatBubble key={index} message={message} reportComponent={message.reportComponent} />
+        ))}
+
         <ThinkingIndicator isThinking={loading} />
-        
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Chat input */}
       <div className="border-t border-gray-200 px-4 py-3 bg-white rounded-b-lg sticky bottom-0">
         <div className="flex items-center">
           <input
             type="text"
             value={inputMessage}
-            onChange={function(e) { setInputMessage(e.target.value); }}
+            onChange={(e) => setInputMessage(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Search more reports..."
             className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-gray-200 shadow-sm"
