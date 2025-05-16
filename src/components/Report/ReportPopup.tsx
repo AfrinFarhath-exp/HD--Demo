@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { theme } from "../../theme";
+import ReportSearch from "../../components/Report/ReportSearch";
 
 const ReturnPopup = ({
   title = "Returns Report",
@@ -13,6 +14,7 @@ const ReturnPopup = ({
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [visible, setVisible] = useState(false);
+  const [showReport, setShowReport] = useState(false); // new state to control report display
 
   useEffect(() => {
     setVisible(true);
@@ -24,6 +26,7 @@ const ReturnPopup = ({
       startDate,
       endDate,
     });
+    setShowReport(true); // show the ReportSearch component
   };
 
   return (
@@ -51,7 +54,7 @@ const ReturnPopup = ({
       <div
         style={{
           animation: visible ? "slideJumpFade 0.6s ease forwards" : "none",
-          background: "white", 
+          background: "white",
           color: theme.colors.text.primary,
           position: "relative",
           boxShadow: theme.shadows.lg,
@@ -62,7 +65,7 @@ const ReturnPopup = ({
           fontFamily: theme.typography.fontFamily,
         }}
       >
-          <button
+        <button
           onClick={handleClose}
           style={{
             position: "absolute",
@@ -121,9 +124,12 @@ const ReturnPopup = ({
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#fff3e0")}
-onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "white")}
-
+              onMouseOver={(e) =>
+                (e.currentTarget.style.backgroundColor = "#fff3e0")
+              }
+              onMouseOut={(e) =>
+                (e.currentTarget.style.backgroundColor = "white")
+              }
               style={{
                 width: "100%",
                 border: `2px solid ${theme.colors.text.primary}`,
@@ -149,9 +155,12 @@ onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "white")}
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#fff3e0")}
-onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "white")}
-
+              onMouseOver={(e) =>
+                (e.currentTarget.style.backgroundColor = "#fff3e0")
+              }
+              onMouseOut={(e) =>
+                (e.currentTarget.style.backgroundColor = "white")
+              }
               style={{
                 width: "100%",
                 border: `2px solid ${theme.colors.text.primary}`,
@@ -188,6 +197,15 @@ onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "white")}
             View Report
           </button>
         </div>
+
+        {/* Conditionally render ReportSearch */}
+        {showReport && (
+          <ReportSearch
+            title={title}
+            startDate={startDate}
+            endDate={endDate}
+          />
+        )}
       </div>
     </>
   );
