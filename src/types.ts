@@ -52,3 +52,10 @@ export type ReportData = {
   dateRange: DateRange;
   countries: CountryPerformance[];
 };
+export type SearchResult = {
+  "@search.score": number;
+  id: string;
+  filename: string;
+  lastmodified: string;
+  content: string;
+};
