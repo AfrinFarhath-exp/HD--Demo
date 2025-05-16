@@ -101,7 +101,7 @@ const ReportModal = ({ isOpen, onClose, reportName, startDate, endDate }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-11/12 h-5/6 max-w-6xl overflow-hidden">
+      <div className="bg-white rounded-lg shadow-xl w-11/12 h-3/4 max-w-6xl overflow-hidden">
         <div className="flex justify-between items-center p-4 border-b">
           <h3 className="font-medium text-lg">{reportName}</h3>
           <button
@@ -109,10 +109,10 @@ const ReportModal = ({ isOpen, onClose, reportName, startDate, endDate }) => {
             className="p-1 rounded-full hover:bg-gray-200 transition-colors"
             aria-label="Close modal"
           >
-            <X size={24} />
+            <X size={24} /> 
           </button>
         </div>
-        <div className="p-4 h-full overflow-auto">
+        <div className="w-11/12 h-3/4 h-full overflow-scroll">
           <ReusableReportTable
             reportName={reportName}
             startDate={startDate}
