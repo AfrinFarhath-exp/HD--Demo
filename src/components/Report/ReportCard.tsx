@@ -14,7 +14,7 @@ export default function ReportCard({ title, onClick }: ReportCardProps) {
         overflow: "hidden",
         borderRadius: 2,
         minWidth: 200,
-        maxWidth: 280,
+        maxWidth: 300,
         backgroundColor: "#f5f5f5",
         cursor: "pointer",
         transition: "transform 0.3s ease",
