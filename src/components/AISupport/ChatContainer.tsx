@@ -40,7 +40,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
 
   useEffect(() => {
     if (searchQuery) {
-      handleUserMessage(searchQuery);
+      handleUserMessage(searchQuery); 
     }
   }, [searchQuery]);
 
