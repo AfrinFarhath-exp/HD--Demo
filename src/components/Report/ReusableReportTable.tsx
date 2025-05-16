@@ -95,7 +95,7 @@ const ReusableReportTable: React.FC<Props> = ({
           component={Paper}
          className="overflow-auto border rounded-md"
         
-            style={{ maxHeight: 280, maxWidth: "400px" }}
+            style={{ maxHeight: 800, maxWidth: 1000 }}
         >
           <Table size="small" stickyHeader style={{ tableLayout: "fixed" }}>
             <TableHead>

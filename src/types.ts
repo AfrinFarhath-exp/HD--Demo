@@ -1,7 +1,7 @@
 export type Message = {
   id: string;
   content: string;
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   timestamp: Date;
   isLoading?: boolean;
 };
@@ -22,7 +22,7 @@ export type IdocIssue = {
 export type SuggestedQuestion = {
   id: string;
   text: string;
-  type: 'idoc' | 'general';
+  type: "idoc" | "general";
 };
 
 export type ReportType = {
