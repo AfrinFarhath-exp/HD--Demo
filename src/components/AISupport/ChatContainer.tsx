@@ -95,9 +95,10 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
 
       const responseMessage: Message = {
         id: uuidv4(),
-        content: results.length
-          ? results[0].content
-          : "Sorry, I couldn't find any relevant information.",
+        content:
+          results.length && results[0]["@search.score"] >= 0.5
+            ? results[0].content
+            : "Sorry, I couldn't find any relevant information. Is there anything else I can help you with?",
         role: "assistant",
         timestamp: new Date(),
       };
@@ -126,6 +127,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
       timestamp: new Date(),
     };
     setMessages((prev) => [...prev, userMessage]);
+    setInput("");
 
     const loadingMessage: Message = {
       id: uuidv4(),
