@@ -76,7 +76,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message, reportComponent }) => 
         </div>
       )}
 
-      <div className={`relative max-w-xs md:max-w-md lg:max-w-lg ${message.isUser ? "order-1" : "order-2"}`}>
+      <div className={`relative max-w-xs md:max-w-md lg:max-w-5xl ${message.isUser ? "order-1" : "order-2"}`}>
         <div
           className={`px-4 py-3 rounded-xl ${
             message.isUser
