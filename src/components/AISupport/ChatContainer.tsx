@@ -39,6 +39,8 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   useEffect(() => {
     if (searchQuery) {
       handleUserMessage(searchQuery);
+      if(searchQuery.toLowerCase().includes("idoc")) handleAssistantIdocResponse();
+      else handleAssistantGeneralResponse(searchQuery);
     }
   }, [searchQuery]);
 
