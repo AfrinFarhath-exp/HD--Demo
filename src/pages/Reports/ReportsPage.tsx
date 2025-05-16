@@ -3,20 +3,16 @@ import ReportCard from "../../components/Report/ReportCard";
 import reports from "../../data/report";
 import ReturnPopup from "../../components/Report/ReportPopup";
 import ReusableReportTable from "../../components/Report/ReusableReportTable";
-import ReportSearch from "../../components/Report/ReportSearch";
 import SendIcon from '@mui/icons-material/Send';
-
+import ReportSearch from "../../components/Report/ReportSearch";
 
 export default function ReportsPage() {
   const [showModal, setShowModal] = useState(false);
   const [selectedReport, setSelectedReport] = useState("");
   const [inputQuery, setInputQuery] = useState("");
-  const [activeQuery, setActiveQuery] = useState<string | null>(null);
-  const [reportParams, setReportParams] = useState<{
-    title: string;
-    startDate: string;
-    endDate: string;
-  } | null>(null);
+  const [activeQuery, setActiveQuery] = useState(null);
+  const [reportParams, setReportParams] = useState(null);
+  const [showReportView, setShowReportView] = useState(false);
 
   const firstRow = reports.slice(0, 5);
   const secondRow = reports.slice(5);
@@ -26,33 +22,40 @@ export default function ReportsPage() {
     if (!q) return;
     setActiveQuery(q);
     setInputQuery("");
+    setShowReportView(false);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e) => {
     if (e.key === "Enter") handleSearch();
   };
 
-  const handleCardClick = (title: string) => {
+  const handleCardClick = (title) => {
     setSelectedReport(title);
     setShowModal(true);
   };
 
-  const handleViewReport = (data: {
-    title: string;
-    startDate: string;
-    endDate: string;
-  }) => {
+  const handleViewReport = (data) => {
     console.log("Report Data Submitted:", data);
     setReportParams(data);
     setShowModal(false);
+    setShowReportView(true);
+    setActiveQuery(null);
   };
 
+  // Return to main view
+  const handleBackButton = () => {
+    setActiveQuery(null);
+    setShowReportView(false);
+    setReportParams(null);
+  };
+
+  // Conversational search view
   if (activeQuery !== null) {
     return (
       <div className="flex flex-col">
         <div className="flex items-center justify-between mb-6">
           <button
-            onClick={() => setActiveQuery(null)}
+            onClick={handleBackButton}
             className="text-primary fixed hover:text-primary/80 font-medium flex items-center z-50"
           >
             ← Back to Search
@@ -65,6 +68,61 @@ export default function ReportsPage() {
     );
   }
 
+  // Report view (new page with heading and table)
+  if (showReportView && reportParams) {
+    // Format dates for display
+    const formatDate = (dateString) => {
+      if (!dateString) return "Not specified";
+      
+      try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        });
+      } catch (e) {
+        return dateString; // Fallback to the original string if parsing fails
+      }
+    };
+    
+    const formattedStartDate = formatDate(reportParams.startDate);
+    const formattedEndDate = formatDate(reportParams.endDate);
+
+    return (
+      <div className="flex flex-col px-8 py-6">
+        <div className="flex items-center justify-between mb-6">
+          <button
+            onClick={handleBackButton}
+            className="text-primary hover:text-primary/80 font-medium flex items-center"
+          >
+            ← Back to Reports
+          </button>
+        </div>
+        
+        <div className="w-full max-w-7xl mx-auto">
+          <h1 className="text-2xl font-bold mb-2">{reportParams.title}</h1>
+          <p className="text-gray-600 mb-6">
+            Date Range: {formattedStartDate} to {formattedEndDate}
+          </p>
+          
+          {/* Edited container for fixed width & centered */}
+         <div className="bg-white rounded-lg shadow-md p-6">
+  <div style={{ width: "100%", minWidth: 800, overflowX: "auto" }}>
+    <ReusableReportTable
+      reportName={reportParams.title}
+      startDate={reportParams.startDate}
+      endDate={reportParams.endDate}
+    />
+  </div>
+</div>
+
+        </div>
+      </div>
+    );
+  }
+
+  // Main reports page view
   return (
     <div className="flex flex-col justify-center pt-24">
       <h1 className="text-4xl font-bold text-center mb-6">Reports</h1>
@@ -125,16 +183,6 @@ export default function ReportsPage() {
             title={selectedReport}
             handleClose={() => setShowModal(false)}
             onViewReport={handleViewReport}
-          />
-        </div>
-      )}
-
-      {reportParams && (
-        <div className="mt-10 px-4 sm:px-16 pb-10">
-          <ReusableReportTable
-            reportName={reportParams.title}
-            startDate={reportParams.startDate}
-            endDate={reportParams.endDate}
           />
         </div>
       )}
