@@ -4,7 +4,7 @@ import reports from "../../data/report";
 import ReturnPopup from "../../components/Report/ReportPopup";
 import ReusableReportTable from "../../components/Report/ReusableReportTable";
 import ReportSearch from "../../components/Report/ReportSearch";
-import SendIcon from '@mui/icons-material/Send';
+import SendIcon from '@mui/icons-material/send';
 
 export default function ReportsPage() {
   const [showModal, setShowModal] = useState(false);
