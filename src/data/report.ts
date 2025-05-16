@@ -9,6 +9,7 @@ const reports = [
   { title: "ISOS Order Report" },
   { title: "Returns Report" },
   { title: "SMGM Orders Report" },
+  { title: "SAC Report" },
 ];
 
 export default reports;
