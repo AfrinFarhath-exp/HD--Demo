@@ -86,7 +86,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
 
     try {
       const response = await axios.post<SearchResult[]>(
-        "/mockapi.json", // Replace with your real endpoint
+        "http://127.0.0.1:8000/Support_search", // Replace with your real endpoint
         { query: content }
       );
       const results = response.data;
@@ -96,7 +96,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
       const responseMessage: Message = {
         id: uuidv4(),
         content:
-          results.length && results[0]["@search.score"] >= 0.5
+          results.length && results[0]["@search.score"] >= 0.8
             ? results[0].content
             : "Sorry, I couldn't find any relevant information. Is there anything else I can help you with?",
         role: "assistant",
