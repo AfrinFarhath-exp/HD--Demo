@@ -35,12 +35,16 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
         },
       ]);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (searchQuery) {
-      handleUserMessage(searchQuery); 
+      if (searchQuery.toLowerCase().includes("idoc")) {
+        handleAssistantIdocResponse(searchQuery);
+      } else {
+        handleUserMessage(searchQuery);
+      }
     }
   }, [searchQuery]);
 
@@ -222,7 +226,11 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     e.preventDefault();
     if (!input.trim()) return;
 
-    handleUserMessage(input);
+    if (input.toLowerCase().includes("idoc")) {
+      handleAssistantIdocResponse(input);
+    } else {
+      handleUserMessage(input);
+    }
 
     if (showIdocIssues) {
       setShowIdocIssues(false);
