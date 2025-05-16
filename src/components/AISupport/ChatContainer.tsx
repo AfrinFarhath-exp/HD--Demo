@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
-import ChatMessage from './ChatMessage';
-import type { Message, IdocIssue, SuggestedQuestion } from '../../types';
-import { Send, Paperclip } from 'lucide-react';
-import IdocIssueCard from './IdocIssueCard';
-import { v4 as uuidv4 } from 'uuid';
+import React, { useState, useEffect, useRef } from "react";
+import ChatBubble from "./ChatBubble";
+import type { Message, IdocIssue, SuggestedQuestion } from "../../types";
+import { Send, Paperclip } from "lucide-react";
+import IdocIssueCard from "./IdocIssueCard";
+import { v4 as uuidv4 } from "uuid";
 
 interface ChatContainerProps {
   selectedIdocIssue?: IdocIssue | null;
@@ -19,7 +19,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   idocIssues,
 }) => {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
   const [showIdocIssues, setShowIdocIssues] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -29,7 +29,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
         {
           id: uuidv4(),
           content: "Hello! I'm your AI assistant. How can I help you today?",
-          role: 'assistant',
+          role: "assistant",
           timestamp: new Date(),
         },
       ]);
@@ -44,7 +44,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
 
   useEffect(() => {
     if (selectedQuestion) {
-      if (selectedQuestion.type === 'idoc') {
+      if (selectedQuestion.type === "idoc") {
         handleUserMessage(selectedQuestion.text);
         setTimeout(() => {
           handleAssistantIdocResponse();
@@ -68,18 +68,18 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     const newMessage: Message = {
       id: uuidv4(),
       content,
-      role: 'user',
+      role: "user",
       timestamp: new Date(),
     };
     setMessages((prev) => [...prev, newMessage]);
-    setInput('');
+    setInput("");
   };
 
   const handleAssistantIdocResponse = () => {
     const loadingMessage: Message = {
       id: uuidv4(),
-      content: '',
-      role: 'assistant',
+      content: "",
+      role: "assistant",
       timestamp: new Date(),
       isLoading: true,
     };
@@ -93,7 +93,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
         id: uuidv4(),
         content:
           "What specific Idoc issue are you referring to? Here are some common issues:",
-        role: 'assistant',
+        role: "assistant",
         timestamp: new Date(),
       };
 
@@ -105,8 +105,8 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   const handleAssistantGeneralResponse = (query: string) => {
     const loadingMessage: Message = {
       id: uuidv4(),
-      content: '',
-      role: 'assistant',
+      content: "",
+      role: "assistant",
       timestamp: new Date(),
       isLoading: true,
     };
@@ -119,7 +119,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
       const responseMessage: Message = {
         id: uuidv4(),
         content: `I'll help you find information about "${query}". Let me search our knowledge base...`,
-        role: 'assistant',
+        role: "assistant",
         timestamp: new Date(),
       };
 
@@ -133,7 +133,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     const userSelectionMessage: Message = {
       id: uuidv4(),
       content: `I'm having an issue with: ${issue.title}`,
-      role: 'user',
+      role: "user",
       timestamp: new Date(),
     };
 
@@ -141,8 +141,8 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
 
     const loadingMessage: Message = {
       id: uuidv4(),
-      content: '',
-      role: 'assistant',
+      content: "",
+      role: "assistant",
       timestamp: new Date(),
       isLoading: true,
     };
@@ -155,7 +155,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
       const solutionMessage: Message = {
         id: uuidv4(),
         content: `${issue.solution}\n\nIs there anything else I can help you with?`,
-        role: 'assistant',
+        role: "assistant",
         timestamp: new Date(),
       };
 
@@ -175,8 +175,8 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
 
     const loadingMessage: Message = {
       id: uuidv4(),
-      content: '',
-      role: 'assistant',
+      content: "",
+      role: "assistant",
       timestamp: new Date(),
       isLoading: true,
     };
@@ -189,7 +189,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
       const responseMessage: Message = {
         id: uuidv4(),
         content: `I'll help you with "${input}". Let me check our knowledge base...`,
-        role: 'assistant',
+        role: "assistant",
         timestamp: new Date(),
       };
 
@@ -198,7 +198,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   };
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, showIdocIssues]);
 
   return (
@@ -206,7 +206,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
       <div className="flex-1 overflow-y-auto p-0">
         <div className="max-w-4xl mx-auto space-y-4">
           {messages.map((message) => (
-            <ChatMessage key={message.id} message={message} />
+            <ChatBubble key={message.id} message={message} />
           ))}
 
           {showIdocIssues && (
@@ -225,7 +225,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
         </div>
       </div>
 
-      <div className="border-t border-gray-200 bg-white p-4 mt-0">
+      <div className="border-t border-gray-200 bg-white p-4">
         <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
           <div className="flex items-center rounded-lg border border-gray-300 bg-white overflow-hidden">
             <button
@@ -245,7 +245,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
               type="submit"
               disabled={!input.trim()}
               className={`p-2 ${
-                input.trim() ? 'text-primary' : 'text-gray-400'
+                input.trim() ? "text-primary" : "text-gray-400"
               }`}
             >
               <Send size={20} />
