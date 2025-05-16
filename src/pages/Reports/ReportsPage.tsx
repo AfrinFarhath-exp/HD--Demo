@@ -19,6 +19,16 @@ export default function ReportsPage() {
 
   const firstRow = reports.slice(0, 5);
   const secondRow = reports.slice(5);
+  const handleSearch = () => {
+    const q = inputQuery.trim();
+    if (!q) return;
+    setActiveQuery(q);
+    setInputQuery("");
+  };
+ 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") handleSearch();
+  };
 
   const handleCardClick = (title: string) => {
     setSelectedReport(title);
@@ -36,6 +46,26 @@ export default function ReportsPage() {
     
   };
 
+  if (activeQuery !== null) {
+    return (
+      <div className=" flex flex-col">
+        <div className="flex items-center justify-between mb-6">
+            <button
+              onClick={() => setActiveQuery(null)}
+              className="text-primary fixed hover:text-primary/80 font-medium flex items-center z-50"
+            >
+              ← Back to Search
+            </button>
+          </div>
+       
+        <div className="flex-1 overflow-hidden">
+          <ReportSearch query={activeQuery} />
+        </div>
+      </div>
+    );
+  }
+
+  
   return (
     <div className="flex flex-col justify-center pt-24">
       <h1 className="text-4xl font-bold text-center mb-6">Reports</h1>
@@ -49,7 +79,7 @@ export default function ReportsPage() {
               onChange={(e) => setInputQuery(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Ask me anything about the reports..."
-              className="w-full pr-12 pl-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-500"
+              className="w-full pr-12 pl-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-200 focus:border-gray-200"
             />
             <button
               type="button"

@@ -93,7 +93,7 @@ const ReusableReportTable: React.FC<Props> = ({
      
         <TableContainer
           component={Paper}
-         className="overflow-auto border rounded-md ml-48"
+         className="overflow-auto border rounded-md"
         
             style={{ maxHeight: 280, maxWidth: "400px" }}
         >

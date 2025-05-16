@@ -1,229 +1,200 @@
-import React, { useEffect, useState } from "react";
-import { MessageCircle, User, Send } from "lucide-react";
+import React, { useEffect, useState, useRef } from "react";
+import { MessageCircle, Send } from "lucide-react";
+import ReusableReportTable from "./ReusableReportTable";
 
-
-
-// Custom Display component that will be shown when user types "hi"
-const Display = () => {
+const ThinkingIndicator = ({ isThinking = false }) => {
+  if (!isThinking) return null;
+  
   return (
-    <div className="bg-white rounded-lg shadow-md p-4 mb-2">
-      <h3 className="text-lg font-bold text-blue-600 mb-2">Performance Dashboard</h3>
-      <div className="overflow-x-auto">
-        <table className="min-w-full table-auto border border-gray-300">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="px-4 py-2 border text-sm">Metric</th>
-              <th className="px-4 py-2 border text-sm">Value</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr className="hover:bg-gray-50">
-              <td className="px-4 py-2 border text-sm font-medium">Total People</td>
-              <td className="px-4 py-2 border text-sm">5,050</td>
-            </tr>
-            <tr className="hover:bg-gray-50">
-              <td className="px-4 py-2 border text-sm font-medium">POC</td>
-              <td className="px-4 py-2 border text-sm">$15.90</td>
-            </tr>
-            <tr className="hover:bg-gray-50">
-              <td className="px-4 py-2 border text-sm font-medium">CoOL</td>
-              <td className="px-4 py-2 border text-sm">1.5%</td>
-            </tr>
-            <tr className="hover:bg-gray-50">
-              <td className="px-4 py-2 border text-sm font-medium">Total Visits</td>
-              <td className="px-4 py-2 border text-sm">5,300</td>
-            </tr>
-            <tr className="hover:bg-gray-50">
-              <td className="px-4 py-2 border text-sm font-medium">Visits with Gift</td>
-              <td className="px-4 py-2 border text-sm">30</td>
-            </tr>
-            <tr className="hover:bg-gray-50">
-              <td className="px-4 py-2 border text-sm font-medium">Visits with No Gifts</td>
-              <td className="px-4 py-2 border text-sm">5</td>
-            </tr>
-            <tr className="hover:bg-gray-50">
-              <td className="px-4 py-2 border text-sm font-medium">New Visitors</td>
-              <td className="px-4 py-2 border text-sm">1</td>
-            </tr>
-            <tr className="hover:bg-gray-50">
-              <td className="px-4 py-2 border text-sm font-medium">Repeat Visitors</td>
-              <td className="px-4 py-2 border text-sm">240</td>
-            </tr>
-          </tbody>
-        </table>
+    <div className="flex items-center justify-start p-3 mb-4">
+      <div className="flex-shrink-0 mr-3">
+        <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white shadow-md">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+          </svg>
+        </div>
+      </div>
+      
+      <div className="relative max-w-xs md:max-w-md lg:max-w-lg bg-gray-100 text-gray-800 px-4 py-3 rounded-xl rounded-bl-none shadow-sm">
+        <div className="flex space-x-1">
+          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }}></div>
+          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }}></div>
+          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }}></div>
+        </div>
       </div>
     </div>
   );
 };
 
 // Chat Bubble Component
-const ChatBubble = ({ message }) => {
+const ChatBubble = ({ message, reportComponent }) => {
   const formatTime = (date) => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
   return (
     <div className={`flex items-start mb-4 ${message.isUser ? "justify-end" : "justify-start"}`}>
-      {/* Avatar for bot messages */}
       {!message.isUser && (
-        <div className="flex-shrink-0 mr-2">
-          <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white">
-            <MessageCircle size={16} />
+        <div className="flex-shrink-0 mr-3">
+          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white shadow-md">
+            <MessageCircle size={20} />
           </div>
         </div>
       )}
-      
-      {/* Message content */}
+
       <div className={`relative max-w-xs md:max-w-md lg:max-w-lg ${message.isUser ? "order-1" : "order-2"}`}>
         <div
-          className={`px-4 py-2 rounded-lg ${
+          className={`px-4 py-3 rounded-xl ${
             message.isUser
-              ? "bg-primary text-white rounded-br-none"
-              : "bg-gray-100 text-gray-800 rounded-bl-none"
-          }`}
+              ? "bg-primary text-white rounded-br-none shadow-md"
+              : "bg-gray-100 text-gray-800 rounded-bl-none shadow-sm"
+            }`}
         >
-          <p className="text-sm">{message.text}</p>
-          
-          {/* Dashboard display if needed */}
-          {message.showDisplay && <Display />}
-          
-          <span className={`text-xs block mt-1 ${message.isUser ? "text-blue-100" : "text-gray-500"}`}>
+          <p className="text-sm whitespace-pre-wrap">{message.text}</p>
+          {message.showDisplay && reportComponent}
+          <span className={`text-xs block mt-2 ${message.isUser ? "text-blue-100" : "text-gray-500"}`}>
             {formatTime(message.timestamp)}
           </span>
         </div>
-       
       </div>
     </div>
   );
 };
 
 const ReportSearch = ({ query }) => {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
+  const messagesEndRef = useRef(null);
+  const chatContainerRef = useRef(null);
+
+  useEffect(function() {
+    if (query) {
+      setMessages([
+        {
+          text: query,
+          isUser: true,
+          timestamp: new Date()
+        }
+      ]);
+      
+      // Add bot response after user's initial query
+      setTimeout(function() {
+        setMessages(function(prevMessages) {
+          return [
+            ...prevMessages,
+            {
+              text: "Hello! Here is the report you requested:",
+              isUser: false,
+              timestamp: new Date(),
+              showDisplay: true,
+              reportComponent: <ReusableReportTable reportName={"SAC Report"} startDate={"2025-05-13"} endDate={"2025-05-14"} />,
+            }
+          ];
+        });
+      }, 500);
+    } else {
+      // Set initial message if no query
+      setMessages([
+        {
+          text: "Hello! How can I help you today?",
+          isUser: false,
+          timestamp: new Date()
+        }
+      ]);
+    }
+  }, [query]);
 
   useEffect(() => {
-    // Initialize with the user's question
-    setMessages([
-      {
-        text: query,
-        isUser: true,
-        timestamp: new Date()
-      }
-    ]);
-
-    // Simulated response logic
-    setTimeout(() => {
-      if (query.toLowerCase() === "hi") {
-        setMessages(prev => [
-          ...prev,
-          {
-            text: "Hello! Here are the latest performance metrics:",
-            isUser: false,
-            timestamp: new Date(),
-            showDisplay: true
-          }
-        ]);
-      } else {
-        setMessages(prev => [
-          ...prev,
-          {
-            text: `I don't have information about "${query}". Try typing "hi" to see the performance dashboard.`,
-            isUser: false,
-            timestamp: new Date()
-          }
-        ]);
-      }
-      setLoading(false);
-    }, 500); // Small delay to simulate processing
-    
-  }, [query]);
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const handleSendMessage = () => {
     if (!inputMessage.trim()) return;
-    
+
     // Add user message
     const userMessage = {
       text: inputMessage,
       isUser: true,
       timestamp: new Date()
     };
+
+    setMessages(function(prev) {
+      return [...prev, userMessage];
+    });
     
-    setMessages(prev => [...prev, userMessage]);
     setInputMessage("");
-    
-    // Simulate bot response
+
+    // Simulate bot response with thinking indicator
     setLoading(true);
-    setTimeout(() => {
-      if (inputMessage.toLowerCase() === "hi") {
-        setMessages(prev => [
-          ...prev,
-          {
-            text: "Hello! Here are the latest performance metrics:",
-            isUser: false,
-            timestamp: new Date(),
-            showDisplay: true
-          }
-        ]);
-      } else {
-        setMessages(prev => [
-          ...prev,
-          {
-            text: `I don't have information about "${inputMessage}". Try typing "hi" to see the performance dashboard.`,
-            isUser: false,
-            timestamp: new Date()
-          }
-        ]);
-      }
+    setTimeout(function() {
+      let botResponse;
+      let reportComponent = null;
+    if (inputMessage.trim().toLowerCase().includes("sac")) {
+  botResponse = {
+    text: "Here is the report you requested:",
+    isUser: false,
+    timestamp: new Date(),
+    showDisplay: true,
+  };
+  reportComponent = (
+    <ReusableReportTable reportName="SAC Report" startDate="2025-05-13" endDate="2025-05-14" />
+  );
+} else {
+  botResponse = {
+    text: `I don't have information about "${inputMessage}". Enter a valid report name`,
+    isUser: false,
+    timestamp: new Date(),
+  };
+}
+
+      
+      setMessages(function(prevMessages) {
+        return [...prevMessages, { ...botResponse, reportComponent }];
+      });
+      
       setLoading(false);
-    }, 500);
+    }, 2000); // Longer delay to see the thinking indicator
   };
 
-  const handleKeyPress = (e) => {
+  const handleKeyPress = function(e) {
     if (e.key === 'Enter') {
       handleSendMessage();
     }
   };
 
   return (
-    <div className="flex flex-col h-full bg-gray-50 rounded-lg shadow-md">
-      {/* Chat header */}
-      <div className="bg-white px-4 py-3 border-b border-gray-200 rounded-t-lg">
-        <div className="flex items-center">
-       
-         
-        </div>
-      </div>
-      
+    <div className="flex flex-col bg-gray-50 rounded-lg shadow-md overflow-clip h-full">
       {/* Chat messages */}
-      <div className="flex-1 p-4 overflow-y-auto bg-gray-50">
-        {loading && messages.length === 1 && (
-          <div className="flex justify-center items-center py-4">
-            <div className="animate-pulse text-blue-500">Processing your request...</div>
-          </div>
-        )}
-
-        {messages.map((message, index) => (
-          <ChatBubble key={index} message={message} />
-        ))}
+      <div className="flex-1 p-4 overflow-y-auto bg-gray-50" ref={chatContainerRef}>
+        {messages.map(function(message, index) {
+          return (
+            <ChatBubble key={index} message={message} reportComponent={message.reportComponent} />
+          );
+        })}
+        
+        {/* Thinking indicator */}
+        <ThinkingIndicator isThinking={loading} />
+        
+        <div ref={messagesEndRef} />
       </div>
-      
+
       {/* Chat input */}
-      <div className="border-t border-gray-200 px-4 py-3 bg-white rounded-b-lg">
+      <div className="border-t border-gray-200 px-4 py-3 bg-white rounded-b-lg sticky bottom-0">
         <div className="flex items-center">
           <input
             type="text"
             value={inputMessage}
-            onChange={(e) => setInputMessage(e.target.value)}
+            onChange={function(e) { setInputMessage(e.target.value); }}
             onKeyPress={handleKeyPress}
-            placeholder="Type a message..."
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Search more reports..."
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-gray-200 shadow-sm"
           />
           <button
             onClick={handleSendMessage}
-            className="ml-2 p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="ml-2 p-3 bg-primary text-white rounded-full hover:bg-primary focus:outline-none focus:ring-2 focus:bg-primary shadow-md"
           >
-            <Send size={16} />
+            <Send size={20} />
           </button>
         </div>
       </div>
