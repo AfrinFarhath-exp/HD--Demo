@@ -52,3 +52,8 @@ export type ReportData = {
   dateRange: DateRange;
   countries: CountryPerformance[];
 };
+
+export type MarkdownTypewriterProps = {
+  text: string;
+  speed: number;
+};

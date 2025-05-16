@@ -1,5 +1,6 @@
 import type { Message } from "../../types";
 import ReactMarkdown from "react-markdown";
+import MarkdownTypewriter from "./MarkdownTypewriter";
 
 type ChatBubbleProps = {
   message: Message;
@@ -66,8 +67,13 @@ export default function ChatBubble({ message }: ChatBubbleProps) {
           </div>
 
           <div className="mt-1 prose prose-sm max-w-full text-gray-800">
-            <ReactMarkdown>{message.content}</ReactMarkdown>
+            {isUser ? (
+              <ReactMarkdown>{message.content}</ReactMarkdown>
+            ) : (
+              <MarkdownTypewriter text={message.content} speed={0.7} />
+            )}
           </div>
+
           {!isUser && (
             <div className="mt-4 flex items-center space-x-2">
               <button className="p-1 rounded-full hover:bg-gray-100 transition-colors">

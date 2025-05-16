@@ -202,7 +202,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   }, [messages, showIdocIssues]);
 
   return (
-    <div className="flex flex-col bg-gray-50 rounded-lg overflow-hidden h-full mb-0 " >
+    <div className="flex flex-col bg-gray-50 rounded-lg  h-full mb-0 ">
       <div className="flex-1 overflow-y-auto p-0">
         <div className="max-w-4xl mx-auto space-y-4">
           {messages.map((message) => (
@@ -220,14 +220,13 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
               ))}
             </div>
           )}
-
           <div ref={messagesEndRef} />
         </div>
       </div>
 
-      <div className="border-t border-gray-200 bg-white p-4">
+      <div className="border-t border-gray-200 p-4">
         <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
-          <div className="flex items-center rounded-lg border border-gray-300 bg-white overflow-hidden">
+          <div className="flex items-center rounded-lg border border-gray-300 bg-white ">
             <button
               type="button"
               className="p-2 text-gray-500 hover:text-gray-700"
