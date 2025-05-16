@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import { MessageCircle, Send } from "lucide-react";
 import ReusableReportTable from "./ReusableReportTable";
+import FullscreenRoundedIcon from '@mui/icons-material/FullscreenRounded';
+import CloseFullscreenRoundedIcon from '@mui/icons-material/CloseFullscreenRounded';
 
 const ThinkingIndicator = ({ isThinking = false }) => {
   if (!isThinking) return null;
@@ -64,9 +66,36 @@ const ReportSearch = ({ query }) => {
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
-  const hasHandledInitialQuery = useRef(false); // Prevent double response
+  const hasHandledInitialQuery = useRef(false);
+  const reportContainerRef = useRef(null);
+
+  // Handle fullscreen API
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
+  const handleFullscreen = () => {
+    if (reportContainerRef.current) {
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      } else {
+        reportContainerRef.current.requestFullscreen().catch(err => {
+          console.error(`Error attempting to enable fullscreen: ${err.message}`);
+        });
+      }
+    }
+  };
 
   const generateBotResponse = (message) => {
     if (message.trim().toLowerCase().includes("sac")) {
@@ -78,11 +107,32 @@ const ReportSearch = ({ query }) => {
           showDisplay: true,
         },
         reportComponent: (
-          <ReusableReportTable
-            reportName="SAC Report"
-            startDate="2025-05-13"
-            endDate="2025-05-14"
-          />
+          <div className="bg-white w-full mt-4 rounded-lg overflow-hidden">
+            <div className="flex justify-between items-center p-2 bg-gray-50 border-b">
+              <h3 className="font-medium">SAC Report</h3>
+              <button 
+                onClick={handleFullscreen}
+                className="p-1 rounded hover:bg-gray-200 transition-colors"
+                aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+              >
+                {isFullscreen ? <CloseFullscreenRoundedIcon /> : <FullscreenRoundedIcon />}
+              </button>
+            </div>
+            <div 
+              ref={reportContainerRef} 
+              className="w-full"
+              style={{ 
+                height: isFullscreen ? "100vh" : "400px",
+                transition: "height 0.3s ease"
+              }}
+            >
+              <ReusableReportTable
+                reportName="SAC Report"
+                startDate="2025-05-13"
+                endDate="2025-05-14"
+              />
+            </div>
+          </div>
         ),
       };
     } else {
@@ -111,7 +161,9 @@ const ReportSearch = ({ query }) => {
       setLoading(true);
       setTimeout(() => {
         const { botResponse, reportComponent } = generateBotResponse(query);
-        setMessages((prev) => [...prev, { ...botResponse, reportComponent }]);
+        setMessages((prev) => {
+          return [...prev, { ...botResponse, reportComponent }];
+        });
         setLoading(false);
       }, 1500);
     } else if (!query) {
@@ -156,7 +208,7 @@ const ReportSearch = ({ query }) => {
   };
 
   return (
-    <div className="flex flex-col bg-gray-50 rounded-lg shadow-md overflow-clip h-full">
+    <div className="flex flex-col bg-gray-50 rounded-lg shadow-md overflow-hidden h-full">
       <div className="flex-1 p-4 overflow-y-auto bg-gray-50" ref={chatContainerRef}>
         {messages.map((message, index) => (
           <ChatBubble key={index} message={message} reportComponent={message.reportComponent} />
