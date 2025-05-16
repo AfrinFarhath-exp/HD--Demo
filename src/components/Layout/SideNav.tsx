@@ -29,18 +29,29 @@ const SideNav: React.FC = () => {
             <li key={item.path}>
               <button
                 onClick={() => navigate(item.path)}
-                className={`flex items-center w-full py-3 rounded-md transition-colors duration-700 ease-in-out${
-                  isActive(item.path)
-                    ? `bg-primary text-white`
-                    : `text-gray-300 hover:bg-gray-800`
-                }`}
-                style={{ color: isActive(item.path) ? theme.colors.text.light : theme.colors.gray[300] }}
+                onMouseEnter={(e) => {
+                  if (!isActive(item.path)) {
+                    e.currentTarget.style.backgroundColor = theme.colors.gray[700];
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActive(item.path)) {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }
+                }}
+                className={`flex items-center w-full py-3 rounded-md transition-colors duration-300 ease-in-out`}
+                style={{
+                  backgroundColor: isActive(item.path) ? theme.colors.active : undefined,
+                  color: isActive(item.path) ? theme.colors.text.light : theme.colors.gray[300],
+                }}
               >
                 <span className="min-w-[64px] flex justify-center">{item.icon}</span>
-                <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-in-out whitespace-nowrap">
+                <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out whitespace-nowrap">
                   {item.label}
                 </span>
               </button>
+
+
             </li>
           ))}
         </ul>
