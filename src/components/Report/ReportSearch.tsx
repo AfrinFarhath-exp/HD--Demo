@@ -442,7 +442,7 @@ const ReportSearch: React.FC<ReportSearchProps> = ({ query}) => {
     } else if (!query && messages.length === 0) {
       setMessages([
         {
-          text: "Hello! How can I help you today? You can search for reports by name or description. Only results with a relevance score of at least 0.80 will be shown.",
+          text: "Hello! How can I help you today? You can search for reports by name or description.",
           isUser: false,
           timestamp: new Date(),
         },
