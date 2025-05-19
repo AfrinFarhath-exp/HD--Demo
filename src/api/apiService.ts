@@ -1,5 +1,4 @@
 import axios from "axios";
-import type { SearchResult } from "../types";
 
 // Configure axios instance
 const apiClient = axios.create({
@@ -9,21 +8,27 @@ const apiClient = axios.create({
   },
 });
 
-interface SearchRequest {
+interface AgentQueryRequest {
   query: string;
-  top_k: number;
+  session_id: string;
 }
 
-export const searchSupport = async (query: string, top_k: number = 2): Promise<SearchResult[]> => {
+interface AgentQueryResponse {
+  session_id: string;
+  steps: any[];
+  final_output: string;
+}
+
+export const queryAgent = async (query: string, sessionId: string): Promise<string> => {
   try {
-    const response = await apiClient.post<SearchResult[]>("/Support_search", {
+    const response = await apiClient.post<AgentQueryResponse>("/ai_agent_query", {
       query,
-      top_k,
-    } as SearchRequest);
-    return response.data;
+      session_id: sessionId,
+    } as AgentQueryRequest);
+
+    return response.data.final_output;
   } catch (error) {
-    console.error("User prompt sent to API but failed:", query);
-    console.error("Error fetching response:", error);
-    throw error; // Let the caller handle the error
+    console.error("API request failed:", query);
+    throw error;
   }
 };

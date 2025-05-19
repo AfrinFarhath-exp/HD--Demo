@@ -4,7 +4,7 @@ import type { Message, IdocIssue, SuggestedQuestion } from "../../types";
 import { Send, Paperclip } from "lucide-react";
 import IdocIssueCard from "./IdocIssueCard";
 import { v4 as uuidv4 } from "uuid";
-import { searchSupport } from "../../api/apiService";
+import { queryAgent } from "../../api/apiService";
 
 
 interface ChatContainerProps {
@@ -86,19 +86,14 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     setMessages((prev) => [...prev, loadingMessage]);
 
     try {
-      const results = await searchSupport(content, 2);
+      const sessionId = "static-session";
+      const finalOutput = await queryAgent(content, sessionId);
 
       setMessages((prev) => prev.filter((msg) => !msg.isLoading));
 
       const responseMessage: Message = {
         id: uuidv4(),
-        content:
-          results.length &&
-          results.some((result) => result["@search.score"] >= 0.8)
-            ? results
-                .map((result) => `- ${result.content}`)
-                .join("\n")
-            : "Sorry, I couldn't find any relevant information. Is there anything else I can help you with?",
+        content: finalOutput,
         role: "assistant",
         timestamp: new Date(),
       };
