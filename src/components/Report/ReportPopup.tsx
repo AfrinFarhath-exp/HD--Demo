@@ -114,7 +114,7 @@ const ReturnPopup = ({
                 display: "block",
                 fontSize: theme.typography.fontSize.sm,
                 fontWeight: theme.typography.fontWeight.semibold,
-                marginBottom: theme.spacing.xs,
+                marginBottom: theme.spacing.md,
               }}
             >
               Select Date
@@ -139,7 +139,7 @@ const ReturnPopup = ({
             />
           </div>
                 {/* View Report Button */}
-        <div style={{marginTop:"26px"}}>
+        <div style={{marginTop:"37px"}}>
           <button
             onClick={handleViewReport}
             style={{
