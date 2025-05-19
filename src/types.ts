@@ -59,3 +59,4 @@ export type SearchResult = {
   lastmodified: string;
   content: string;
 };
+

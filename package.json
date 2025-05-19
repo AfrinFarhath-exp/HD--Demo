@@ -23,7 +23,9 @@
     "react-full-screen": "^1.1.1",
     "react-markdown": "^10.1.0",
     "react-router-dom": "^6.22.1",
+    "react-select": "^5.10.1",
     "styled-components": "^6.1.18",
+    "tailwind-scrollbar-hide": "^2.0.0",
     "uuid": "^9.0.1"
   },
   "devDependencies": {

@@ -46,5 +46,9 @@ export default {
       },
     },
   },
+<<<<<<< HEAD
   plugins: [require('@tailwindcss/typography')],
+=======
+ 
+>>>>>>> tvm
 };
