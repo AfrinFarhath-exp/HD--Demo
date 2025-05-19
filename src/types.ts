@@ -52,3 +52,4 @@ export type ReportData = {
   dateRange: DateRange;
   countries: CountryPerformance[];
 };
+

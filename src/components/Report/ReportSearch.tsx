@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { MessageCircle, Send, Maximize2, X } from "lucide-react";
+import ReusableReportTable from "./ReusableReportTable";
+import '../../index.css';
 
 interface Message {
   text: string;
@@ -232,132 +234,33 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
   );
 };
 
-const azureSearchService = {
+// Modal Component for Report
+const ReportModal = ({ isOpen, onClose, reportName, startDate, endDate }) => {
+  if (!isOpen) return null;
 
-  apiEndpoint: "https://hd-dddrdnc2amfvdrcw.eastasia-01.azurewebsites.net/Metrics_search",
-  apiKey: "8EhgReELYz1ubhefjbu3ypHQu3izCzx05so65jpkUjLvKUi3oEj8JQQJ99BEACYeBjFXJ3w3AAABACOGQKn6",
-  
-  async searchReports(query: string, topK: number = 1, minSearchScore: number = 0.8): Promise<AzureSearchResponse> {
-    try {
-      const requestBody = {
-        "query": query,
-        "top_k": topK
-      };
-      
-      console.log("Sending search request:", requestBody);
-      
-      const response = await fetch(this.apiEndpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "api-key": this.apiKey,
-        },
-        body: JSON.stringify(requestBody),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      console.log("Raw API response:", data);
-      
-      const processedResults = this.processSearchResults(data, minSearchScore);
-      console.log("Processed results:", processedResults);
-      
-      return { results: processedResults };
-    } catch (error) {
-      console.error("Azure Search API error:", error);
-      return { 
-        results: [], 
-        error: "I'm having trouble connecting to the search service. Please try again later." 
-      };
-    }
-  },
-
-  processSearchResults(data: any, minSearchScore: number = 0.8): AzureSearchResult[] {
-    if (!data) {
-      console.error("No data received from API");
-      return [];
-    }
-    
-    let items = [];
-    
-    if (data.value && Array.isArray(data.value)) {
-      items = data.value;
-    } else if (Array.isArray(data)) {
-      items = data;
-    } else if (typeof data === 'object') {
-      if (data.results && Array.isArray(data.results)) {
-        items = data.results;
-      } else {
-        items = [data];
-      }
-    }
-    
-    if (items.length === 0) {
-      console.warn("No items found in response data");
-      return [];
-    }
-
-    const filteredItems = items.filter(item => {
-      const score = item['@search.score'] || item.searchScore || 0;
-      console.log(`Item score: ${score}`);
-      return score >= minSearchScore;
-    });
-
-    console.log(`Filtered ${items.length} results to ${filteredItems.length} with score >= ${minSearchScore}`);
-
-    return filteredItems.map((item) => {
-      const baseResult = {
-        id: item.id || item.document_id || `result-${Math.random().toString(36).substr(2, 9)}`,
-        fileName: item.filename || item.fileName || item.document_name || "Report",
-        startDate: item.start_date || item.startDate || "N/A",
-        endDate: item.end_date || item.endDate || "N/A",
-        country: item.country || "Global",
-        content: item.content || item.description || "",
-        searchScore: item['@search.score'] || item.searchScore || 0,
-        metrics: [] 
-      };
-      
-      if (baseResult.content) {
-        try {
-       
-          const contentStr = baseResult.content.toString();
-          
-          let metricsArray = [];
-          
-          const metricRegexes = [
-            /\*\*(.*?):\*\*\s*([\d,$,.]+)/g,  // **Metric:** Value
-            /-(.*?):\s*([\d,$,.]+)/g,          // - Metric: Value
-            /(.*?):\s*([\d,$,.]+)/g            // Metric: Value
-          ];
-          
-          for (const regex of metricRegexes) {
-            let match;
-            while ((match = regex.exec(contentStr)) !== null) {
-              const metricName = match[1].trim();
-              const metricValue = match[2].trim();
-              
-              // Only add if not already in the array
-              if (!metricsArray.some(m => m.name === metricName)) {
-                metricsArray.push({ name: metricName, value: metricValue });
-              }
-            }
-            
-            // If we found metrics with this regex, no need to try others
-            if (metricsArray.length > 0) break;
-          }
-          
-          baseResult.metrics = metricsArray;
-        } catch (err) {
-          console.error("Error parsing content metrics:", err);
-        }
-      }
-      
-      return baseResult;
-    });
-  }
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white rounded-lg shadow-xl w-11/12 h-5/6 max-w-6xl overflow-scroll scrollbar-hide">
+        <div className="flex justify-between items-center p-4 border-b">
+          <h3 className="font-medium text-lg">{reportName}</h3>
+          <button
+            onClick={onClose}
+            className="p-1 rounded-full hover:bg-gray-200 transition-colors"
+            aria-label="Close modal"
+          >
+            <X size={20} /> 
+          </button>
+        </div>
+        <div className="w-11/12 h-3/4  ">
+          <ReusableReportTable
+            reportName={reportName}
+            startDate={startDate}
+            endDate={endDate}
+          />
+        </div>
+      </div>
+    </div>
+  );
 };
 
 // Main Chat Component
