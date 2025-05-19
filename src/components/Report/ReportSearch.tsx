@@ -230,7 +230,6 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
 const azureSearchService = {
 
   apiEndpoint: "https://hd-dddrdnc2amfvdrcw.eastasia-01.azurewebsites.net/Metrics_search",
-  apiKey: "8EhgReELYz1ubhefjbu3ypHQu3izCzx05so65jpkUjLvKUi3oEj8JQQJ99BEACYeBjFXJ3w3AAABACOGQKn6",
   
   async searchReports(query: string, topK: number = 2, minSearchScore: number = 0.8): Promise<AzureSearchResponse> {
     try {
@@ -245,7 +244,6 @@ const azureSearchService = {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "api-key": this.apiKey,
         },
         body: JSON.stringify(requestBody),
       });
