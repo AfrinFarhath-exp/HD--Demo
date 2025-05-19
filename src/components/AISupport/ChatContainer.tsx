@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import ChatBubble from "./ChatBubble";
-import type { Message, IdocIssue, SuggestedQuestion, SearchResult } from "../../types";
+import type { Message, IdocIssue, SuggestedQuestion } from "../../types";
 import { Send, Paperclip } from "lucide-react";
 import IdocIssueCard from "./IdocIssueCard";
 import { v4 as uuidv4 } from "uuid";
-import axios from "axios";
+import { searchSupport } from "../../api/apiService";
+
 
 interface ChatContainerProps {
   selectedIdocIssue?: IdocIssue | null;
@@ -85,19 +86,18 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     setMessages((prev) => [...prev, loadingMessage]);
 
     try {
-      const response = await axios.post<SearchResult[]>(
-        "https://hd-dddrdnc2amfvdrcw.eastasia-01.azurewebsites.net/Support_search",
-        { query: content ,top_k:1}
-      );
-      const results = response.data;
+      const results = await searchSupport(content, 2);
 
       setMessages((prev) => prev.filter((msg) => !msg.isLoading));
 
       const responseMessage: Message = {
         id: uuidv4(),
         content:
-          results.length && results[0]["@search.score"] >= 0.8
-            ? results[0].content
+          results.length &&
+          results.some((result) => result["@search.score"] >= 0.8)
+            ? results
+                .map((result) => `- ${result.content}`)
+                .join("\n")
             : "Sorry, I couldn't find any relevant information. Is there anything else I can help you with?",
         role: "assistant",
         timestamp: new Date(),
