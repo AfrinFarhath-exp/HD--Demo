@@ -387,7 +387,7 @@ const ReportSearch: React.FC<ReportSearchProps> = ({ query}) => {
       
       const countryList = [...new Set(searchResponse.results.map(result => result.country))].join(", ");
       
-      responseText += `I found ${searchResponse.results.length} relevant ${
+      responseText += `Relevant ${
         searchResponse.results.length === 1 ? "report" : "reports"
       } from ${countryList}.`;
       
