@@ -86,7 +86,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
 
     try {
       const response = await axios.post<SearchResult[]>(
-        "http://127.0.0.1:8000/Support_search", // Replace with your real endpoint
+        "https://hd-dddrdnc2amfvdrcw.eastasia-01.azurewebsites.net/Support_search", // Replace with your real endpoint
         { query: content }
       );
       const results = response.data;
