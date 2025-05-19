@@ -20,6 +20,7 @@ interface ChatBubbleProps {
 
 interface ReportSearchProps {
   query?: string;
+  
   minSearchScore?: number; 
 }
 
@@ -229,13 +230,13 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
 
 const azureSearchService = {
 
-  apiEndpoint: "https://hd-dddrdnc2amfvdrcw.eastasia-01.azurewebsites.net/Metrics_search",
+  apiEndpoint: "https://hd-dddrdnc2amfvdrcw.eastasia-01.azurewebsites.net/ai_agent_query",
   
-  async searchReports(query: string, topK: number = 2, minSearchScore: number = 0.8): Promise<AzureSearchResponse> {
+  async searchReports(query: string, session_id : number, minSearchScore: number = 0.8): Promise<AzureSearchResponse> {
     try {
       const requestBody = {
         "query": query,
-        "top_k": topK
+        "session_id": session_id
       };
       
       console.log("Sending search request:", requestBody);
