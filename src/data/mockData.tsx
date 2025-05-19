@@ -4,12 +4,12 @@ export const suggestedQuestions: SuggestedQuestion[] = [
   { id: "1", text: "I have an issue with Idoc", type: "idoc" },
   {
     id: "2",
-    text: "Cloudfare error",
+    text: "Postal code error: must have a length of 7 ",
     type: "idoc",
   },
   {
     id: "3",
-    text: "BOPIS error",
+    text: "No customer master record exists for sold to party",
     type: "idoc",
   },
 ];
