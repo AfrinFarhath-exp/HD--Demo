@@ -1,14 +1,12 @@
 import React, { useEffect, useState, useRef } from "react";
 import { MessageCircle, Send, Maximize2, X } from "lucide-react";
-import ReusableReportTable from "./ReusableReportTable";
 
-// Type Definitions
 interface Message {
   text: string;
   isUser: boolean;
   timestamp: Date;
   showDisplay?: boolean;
-  reportComponent?: React.ReactNode;
+  tableData?: AzureSearchResult[]; 
 }
 
 interface ThinkingIndicatorProps {
@@ -17,14 +15,29 @@ interface ThinkingIndicatorProps {
 
 interface ChatBubbleProps {
   message: Message;
-  reportComponent?: React.ReactNode;
 }
 
 interface ReportSearchProps {
   query?: string;
+  minSearchScore?: number; 
 }
 
-// Thinking Indicator Component
+interface AzureSearchResult {
+  id?: string;
+  fileName?: string;
+  startDate: string;
+  endDate: string;
+  country: string;
+  content?: string;
+  searchScore?: number; 
+  metrics?: Array<{name: string, value: string}>;
+}
+
+interface AzureSearchResponse {
+  results: AzureSearchResult[];
+  error?: string;
+}
+
 const ThinkingIndicator: React.FC<ThinkingIndicatorProps> = ({ isThinking = false }) => {
   if (!isThinking) return null;
 
@@ -60,10 +73,105 @@ const ThinkingIndicator: React.FC<ThinkingIndicatorProps> = ({ isThinking = fals
   );
 };
 
-// Chat Bubble Component
-const ChatBubble: React.FC<ChatBubbleProps> = ({ message, reportComponent }) => {
+// Results Table Component
+const ResultsTable: React.FC<{ data: AzureSearchResult }> = ({ data }) => {
+  // First create general info rows
+  const generalInfo = [
+    { metric: "Date", value: data.startDate, change: "" },
+    { metric: "Country", value: data.country, change: "" }
+  ];
+  
+  // Process performance metrics if available
+  const metricsData = data.metrics || [];
+  
+  // Determine if we should display metrics separately
+  const hasMetrics = metricsData.length > 0;
+  
+  return (
+    <div className="bg-white rounded-lg overflow-hidden shadow-sm mt-3 w-full">
+      
+      <div className="overflow-x-auto">
+        {/* General Info Table */}
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                General Info
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Value
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {generalInfo.map((row, index) => (
+              <tr key={`general-${index}`} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                <td className="px-6 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                  {row.metric}
+                </td>
+                <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-500">
+                  {row.value}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {!hasMetrics && data.content && (
+          <div className="p-4 text-sm text-gray-600 whitespace-pre-wrap">{data.content}</div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Modal Component for Table
+const TableModal = ({ isOpen, onClose, data }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg shadow-xl w-11/12 h-3/4 max-w-6xl overflow-hidden">
+        <div className="flex justify-between items-center p-4 border-b">
+          <div>
+            <h3 className="font-medium text-lg">{data.fileName || "Report Details"}</h3>
+            <p className="text-sm text-gray-500">
+              {data.startDate} to {data.endDate}
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1 rounded-full hover:bg-gray-200 transition-colors"
+            aria-label="Close modal"
+          >
+            <X size={24} /> 
+          </button>
+        </div>
+        <div className="p-6 overflow-auto h-5/6">
+          <ResultsTable data={data} />
+          
+          {/* Show raw content if available */}
+          {data.content && (
+            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+              <pre className="font-sans text text-gray-600 whitespace-pre-wrap">{data.content}</pre>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
   const formatTime = (date: Date): string => {
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  };
+
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedData, setSelectedData] = useState<AzureSearchResult | null>(null);
+
+  const openModal = (data: AzureSearchResult) => {
+    setSelectedData(data);
+    setModalOpen(true);
   };
 
   return (
@@ -85,7 +193,36 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message, reportComponent }) => 
           }`}
         >
           <p className="text-sm whitespace-pre-wrap">{message.text}</p>
-          {message.showDisplay && reportComponent}
+          {message.showDisplay && message.tableData && message.tableData.length > 0 && (
+            <div className="mt-2">
+              {/* Loop through each result and display them */}
+              {message.tableData.map((data, index) => (
+                <div key={index} className="mt-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <h4 className="text-sm font-medium">
+                      {data.country} Report Summary {message.tableData && message.tableData.length > 1 ? `(${index + 1}/${message.tableData.length})` : ''}
+                    </h4>
+                    <button
+                      onClick={() => openModal(data)}
+                      className="p-1 rounded hover:bg-gray-200 transition-colors text-gray-600"
+                      aria-label="View full report"
+                    >
+                      <Maximize2 size={16} />
+                    </button>
+                  </div>
+                  <ResultsTable data={data} />
+                </div>
+              ))}
+              
+              {selectedData && (
+                <TableModal 
+                  isOpen={modalOpen} 
+                  onClose={() => setModalOpen(false)} 
+                  data={selectedData} 
+                />
+              )}
+            </div>
+          )}
           <span className={`text-xs block mt-2 ${message.isUser ? "text-blue-100" : "text-gray-500"}`}>
             {formatTime(message.timestamp)}
           </span>
@@ -95,94 +232,184 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message, reportComponent }) => 
   );
 };
 
-// Modal Component for Report
-const ReportModal = ({ isOpen, onClose, reportName, startDate, endDate }) => {
-  if (!isOpen) return null;
+const azureSearchService = {
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-11/12 h-3/4 max-w-6xl overflow-hidden">
-        <div className="flex justify-between items-center p-4 border-b">
-          <h3 className="font-medium text-lg">{reportName}</h3>
-          <button
-            onClick={onClose}
-            className="p-1 rounded-full hover:bg-gray-200 transition-colors"
-            aria-label="Close modal"
-          >
-            <X size={24} /> 
-          </button>
-        </div>
-        <div className="w-11/12 h-3/4 h-full overflow-scroll">
-          <ReusableReportTable
-            reportName={reportName}
-            startDate={startDate}
-            endDate={endDate}
-          />
-        </div>
-      </div>
-    </div>
-  );
+  apiEndpoint: "https://hd-dddrdnc2amfvdrcw.eastasia-01.azurewebsites.net/Metrics_search",
+  apiKey: "8EhgReELYz1ubhefjbu3ypHQu3izCzx05so65jpkUjLvKUi3oEj8JQQJ99BEACYeBjFXJ3w3AAABACOGQKn6",
+  
+  async searchReports(query: string, topK: number = 1, minSearchScore: number = 0.8): Promise<AzureSearchResponse> {
+    try {
+      const requestBody = {
+        "query": query,
+        "top_k": topK
+      };
+      
+      console.log("Sending search request:", requestBody);
+      
+      const response = await fetch(this.apiEndpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "api-key": this.apiKey,
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log("Raw API response:", data);
+      
+      const processedResults = this.processSearchResults(data, minSearchScore);
+      console.log("Processed results:", processedResults);
+      
+      return { results: processedResults };
+    } catch (error) {
+      console.error("Azure Search API error:", error);
+      return { 
+        results: [], 
+        error: "I'm having trouble connecting to the search service. Please try again later." 
+      };
+    }
+  },
+
+  processSearchResults(data: any, minSearchScore: number = 0.8): AzureSearchResult[] {
+    if (!data) {
+      console.error("No data received from API");
+      return [];
+    }
+    
+    let items = [];
+    
+    if (data.value && Array.isArray(data.value)) {
+      items = data.value;
+    } else if (Array.isArray(data)) {
+      items = data;
+    } else if (typeof data === 'object') {
+      if (data.results && Array.isArray(data.results)) {
+        items = data.results;
+      } else {
+        items = [data];
+      }
+    }
+    
+    if (items.length === 0) {
+      console.warn("No items found in response data");
+      return [];
+    }
+
+    const filteredItems = items.filter(item => {
+      const score = item['@search.score'] || item.searchScore || 0;
+      console.log(`Item score: ${score}`);
+      return score >= minSearchScore;
+    });
+
+    console.log(`Filtered ${items.length} results to ${filteredItems.length} with score >= ${minSearchScore}`);
+
+    return filteredItems.map((item) => {
+      const baseResult = {
+        id: item.id || item.document_id || `result-${Math.random().toString(36).substr(2, 9)}`,
+        fileName: item.filename || item.fileName || item.document_name || "Report",
+        startDate: item.start_date || item.startDate || "N/A",
+        endDate: item.end_date || item.endDate || "N/A",
+        country: item.country || "Global",
+        content: item.content || item.description || "",
+        searchScore: item['@search.score'] || item.searchScore || 0,
+        metrics: [] 
+      };
+      
+      if (baseResult.content) {
+        try {
+       
+          const contentStr = baseResult.content.toString();
+          
+          let metricsArray = [];
+          
+          const metricRegexes = [
+            /\*\*(.*?):\*\*\s*([\d,$,.]+)/g,  // **Metric:** Value
+            /-(.*?):\s*([\d,$,.]+)/g,          // - Metric: Value
+            /(.*?):\s*([\d,$,.]+)/g            // Metric: Value
+          ];
+          
+          for (const regex of metricRegexes) {
+            let match;
+            while ((match = regex.exec(contentStr)) !== null) {
+              const metricName = match[1].trim();
+              const metricValue = match[2].trim();
+              
+              // Only add if not already in the array
+              if (!metricsArray.some(m => m.name === metricName)) {
+                metricsArray.push({ name: metricName, value: metricValue });
+              }
+            }
+            
+            // If we found metrics with this regex, no need to try others
+            if (metricsArray.length > 0) break;
+          }
+          
+          baseResult.metrics = metricsArray;
+        } catch (err) {
+          console.error("Error parsing content metrics:", err);
+        }
+      }
+      
+      return baseResult;
+    });
+  }
 };
 
 // Main Chat Component
-const ReportSearch: React.FC<ReportSearchProps> = ({ query }) => {
+const ReportSearch: React.FC<ReportSearchProps> = ({ query}) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState<string>("");
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
   const hasHandledInitialQuery = useRef<boolean>(false);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [currentReport, setCurrentReport] = useState({
-    name: "",
-    startDate: "",
-    endDate: ""
-  });
 
-  const openReportInModal = (reportName: string, startDate: string, endDate: string) => {
-    setCurrentReport({ name: reportName, startDate, endDate });
-    setModalOpen(true);
-  };
+  const searchAzureAndGenerateResponse = async (query: string): Promise<Message> => {
+    try {
+      const searchResponse = await azureSearchService.searchReports(query, 2, 0.80);
 
-  const generateBotResponse = (message: string): { botResponse: Message; reportComponent: React.ReactNode | null } => {
-    if (message.trim().toLowerCase().includes("sac")) {
-      return {
-        botResponse: {
-          text: "Here is the report you requested:",
+      if (searchResponse.error) {
+        return {
+          text: searchResponse.error,
           isUser: false,
           timestamp: new Date(),
-          showDisplay: true,
-        },
-        reportComponent: (
-          <div className="bg-white w-full mt-4 rounded-lg overflow-hidden">
-            <div className="flex justify-between items-center p-2 bg-gray-50 border-b">
-              <h3 className="font-medium">SAC Report</h3>
-              <button
-                onClick={() => openReportInModal("SAC Report", "2025-05-13", "2025-05-14")}
-                className="p-1 rounded hover:bg-gray-200 transition-colors"
-                aria-label="View in larger modal"
-              >
-                <Maximize2 size={18} />
-              </button>
-            </div>
-            <div className="w-full" style={{ height: "300px" }}>
-              <ReusableReportTable
-                reportName="SAC Report"
-                startDate="2025-05-13"
-                endDate="2025-05-14" 
-              />
-            </div>
-          </div>
-        ),
+        };
+      }
+      
+      if (searchResponse.results.length === 0) {
+        return {
+          text: `I couldn't find any results. Please try a different search term.`,
+          isUser: false,
+          timestamp: new Date(),
+        };
+      }
+      
+      let responseText = `Here's what I found for "${query}" \n\n`;
+      
+      const countryList = [...new Set(searchResponse.results.map(result => result.country))].join(", ");
+      
+      responseText += `Relevant ${
+        searchResponse.results.length === 1 ? "report" : "reports"
+      } from ${countryList}.`;
+      
+      return {
+        text: responseText,
+        isUser: false,
+        timestamp: new Date(),
+        showDisplay: true,
+        tableData: searchResponse.results
       };
-    } else {
+    } catch (error) {
+      console.error("Error processing search:", error);
       return {
-        botResponse: {
-          text: `I don't have information about "${message}". Enter a valid report name`,
-          isUser: false,
-          timestamp: new Date(),
-        },
-        reportComponent: null,
+        text: "I'm having trouble with your search request. Please try again later.",
+        isUser: false,
+        timestamp: new Date(),
       };
     }
   };
@@ -199,17 +426,29 @@ const ReportSearch: React.FC<ReportSearchProps> = ({ query }) => {
       setMessages([userMessage]);
 
       setLoading(true);
-      setTimeout(() => {
-        const { botResponse, reportComponent } = generateBotResponse(query);
-        setMessages((prev) => {
-          return [...prev, { ...botResponse, reportComponent }];
+      
+      searchAzureAndGenerateResponse(query)
+        .then((botResponse) => {
+          setMessages((prev) => [...prev, botResponse]);
+        })
+        .catch((error) => {
+          console.error("Error handling search:", error);
+          setMessages((prev) => [
+            ...prev,
+            {
+              text: "I encountered an error while processing your request. Please try again.",
+              isUser: false,
+              timestamp: new Date(),
+            },
+          ]);
+        })
+        .finally(() => {
+          setLoading(false);
         });
-        setLoading(false);
-      }, 1500);
-    } else if (!query) {
+    } else if (!query && messages.length === 0) {
       setMessages([
         {
-          text: "Hello! How can I help you today?",
+          text: "Hello! How can I help you today? You can search for reports by name or description. Only results with a relevance score of at least 0.80 will be shown.",
           isUser: false,
           timestamp: new Date(),
         },
@@ -219,13 +458,15 @@ const ReportSearch: React.FC<ReportSearchProps> = ({ query }) => {
 
   useEffect(() => {
     const scrollTimeout = setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, 50); // Wait a bit to allow DOM to render
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+      }
+    }, 100); 
 
     return () => clearTimeout(scrollTimeout);
   }, [messages]);
 
-  const handleSendMessage = (): void => {
+  const handleSendMessage = async (): Promise<void> => {
     if (!inputMessage.trim()) return;
 
     const userMessage: Message = {
@@ -238,11 +479,22 @@ const ReportSearch: React.FC<ReportSearchProps> = ({ query }) => {
     setInputMessage("");
     setLoading(true);
 
-    setTimeout(() => {
-      const { botResponse, reportComponent } = generateBotResponse(inputMessage);
-      setMessages((prev) => [...prev, { ...botResponse, reportComponent }]);
+    try {
+      const botResponse = await searchAzureAndGenerateResponse(inputMessage);
+      setMessages((prev) => [...prev, botResponse]);
+    } catch (error) {
+      console.error("Error handling message:", error);
+      setMessages((prev) => [
+        ...prev,
+        {
+          text: "I encountered an error while processing your request. Please try again.",
+          isUser: false,
+          timestamp: new Date(),
+        },
+      ]);
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>): void => {
@@ -253,37 +505,28 @@ const ReportSearch: React.FC<ReportSearchProps> = ({ query }) => {
 
   return (
     <div className="flex flex-col bg-gray-50 rounded-lg shadow-md overflow-hidden h-full">
-      <div className="flex-1 p-4 overflow-y-auto bg-gray-50" ref={chatContainerRef}>
+      <div className="flex-1 p-4 overflow-y-auto bg-gray-50 pb-20" ref={chatContainerRef}>
         {messages.map((message, index) => (
-          <ChatBubble key={index} message={message} reportComponent={message.reportComponent} />
+          <ChatBubble key={index} message={message} />
         ))}
         <ThinkingIndicator isThinking={loading} />
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Modal */}
-      <ReportModal 
-        isOpen={modalOpen} 
-        onClose={() => setModalOpen(false)} 
-        reportName={currentReport.name}
-        startDate={currentReport.startDate}
-        endDate={currentReport.endDate}
-      />
-
-      {/* Fixed input at bottom */}
-      <div className="fixed bottom-0 left-1/3 transform -translate-x-1/4 px-10 py-4 shadow-lg w-full max-w-8xl">
-        <div className="flex items-center gap-6 max-w-6xl mx-auto">
+      <div className="fixed bottom-0 left-0 right-0 px-4 py-4 bg-white shadow-lg">
+        <div className="flex items-center gap-2 max-w-6xl mx-auto">
           <input
             type="text"
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Search more reports..."
+            placeholder="Search for reports..."
             className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-gray-200 shadow-sm"
           />
           <button
             onClick={handleSendMessage}
-            className="ml-2 p-3 bg-primary text-white rounded-full hover:bg-primary focus:outline-none focus:ring-2 focus:bg-primary shadow-md"
+            className="p-3 bg-primary text-white rounded-full hover:bg-primary focus:outline-none focus:ring-2 focus:bg-primary shadow-md"
+            disabled={loading}
           >
             <Send size={20} />
           </button>

@@ -110,14 +110,14 @@ export default function ReportsPage() {
           
           {/* Edited container for fixed width & centered */}
          <div className="bg-white rounded-lg shadow-md p-6">
-  <div style={{ width: "100%", minWidth: 800, overflowX: "auto" }}>
-    <ReusableReportTable
-      reportName={reportParams.title}
-      startDate={reportParams.startDate}
-      endDate={reportParams.endDate}
-    />
-  </div>
-</div>
+          <div style={{ width: "100%", minWidth: 800, overflowX: "auto" }}>
+            <ReusableReportTable
+              reportName={reportParams.title}
+              startDate={reportParams.startDate}
+              endDate={reportParams.endDate}
+            />
+          </div>
+        </div>
 
         </div>
       </div>
