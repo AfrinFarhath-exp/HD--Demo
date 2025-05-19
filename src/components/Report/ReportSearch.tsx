@@ -1,14 +1,13 @@
 import React, { useEffect, useState, useRef } from "react";
 import { MessageCircle, Send, Maximize2, X } from "lucide-react";
-import ReusableReportTable from "./ReusableReportTable";
-import '../../index.css';
 
+// Type Definitions
 interface Message {
   text: string;
   isUser: boolean;
   timestamp: Date;
   showDisplay?: boolean;
-  tableData?: AzureSearchResult[]; 
+  tableData?: AzureSearchResult[];  
 }
 
 interface ThinkingIndicatorProps {
@@ -75,34 +74,28 @@ const ThinkingIndicator: React.FC<ThinkingIndicatorProps> = ({ isThinking = fals
   );
 };
 
-// Results Table Component
 const ResultsTable: React.FC<{ data: AzureSearchResult }> = ({ data }) => {
-  // First create general info rows
+
   const generalInfo = [
     { metric: "Date", value: data.startDate, change: "" },
     { metric: "Country", value: data.country, change: "" }
   ];
   
-  // Process performance metrics if available
   const metricsData = data.metrics || [];
   
-  // Determine if we should display metrics separately
   const hasMetrics = metricsData.length > 0;
   
   return (
     <div className="bg-white rounded-lg overflow-hidden shadow-sm mt-3 w-full">
       
       <div className="overflow-x-auto">
-        {/* General Info Table */}
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 General Info
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Value
-              </th>
+
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -118,6 +111,8 @@ const ResultsTable: React.FC<{ data: AzureSearchResult }> = ({ data }) => {
             ))}
           </tbody>
         </table>
+        
+        
         {!hasMetrics && data.content && (
           <div className="p-4 text-sm text-gray-600 whitespace-pre-wrap">{data.content}</div>
         )}
@@ -126,7 +121,6 @@ const ResultsTable: React.FC<{ data: AzureSearchResult }> = ({ data }) => {
   );
 };
 
-// Modal Component for Table
 const TableModal = ({ isOpen, onClose, data }) => {
   if (!isOpen) return null;
 
@@ -137,7 +131,7 @@ const TableModal = ({ isOpen, onClose, data }) => {
           <div>
             <h3 className="font-medium text-lg">{data.fileName || "Report Details"}</h3>
             <p className="text-sm text-gray-500">
-              {data.startDate} to {data.endDate}
+              {data.startDate} 
             </p>
           </div>
           <button
@@ -151,7 +145,6 @@ const TableModal = ({ isOpen, onClose, data }) => {
         <div className="p-6 overflow-auto h-5/6">
           <ResultsTable data={data} />
           
-          {/* Show raw content if available */}
           {data.content && (
             <div className="mt-6 p-4 bg-gray-50 rounded-lg">
               <pre className="font-sans text text-gray-600 whitespace-pre-wrap">{data.content}</pre>
@@ -234,33 +227,131 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
   );
 };
 
-// Modal Component for Report
-const ReportModal = ({ isOpen, onClose, reportName, startDate, endDate }) => {
-  if (!isOpen) return null;
+const azureSearchService = {
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div className="bg-white rounded-lg shadow-xl w-11/12 h-5/6 max-w-6xl overflow-scroll scrollbar-hide">
-        <div className="flex justify-between items-center p-4 border-b">
-          <h3 className="font-medium text-lg">{reportName}</h3>
-          <button
-            onClick={onClose}
-            className="p-1 rounded-full hover:bg-gray-200 transition-colors"
-            aria-label="Close modal"
-          >
-            <X size={20} /> 
-          </button>
-        </div>
-        <div className="w-11/12 h-3/4  ">
-          <ReusableReportTable
-            reportName={reportName}
-            startDate={startDate}
-            endDate={endDate}
-          />
-        </div>
-      </div>
-    </div>
-  );
+  apiEndpoint: "https://hd-dddrdnc2amfvdrcw.eastasia-01.azurewebsites.net/Metrics_search",
+  apiKey: "8EhgReELYz1ubhefjbu3ypHQu3izCzx05so65jpkUjLvKUi3oEj8JQQJ99BEACYeBjFXJ3w3AAABACOGQKn6",
+  
+  async searchReports(query: string, topK: number = 2, minSearchScore: number = 0.8): Promise<AzureSearchResponse> {
+    try {
+      const requestBody = {
+        "query": query,
+        "top_k": topK
+      };
+      
+      console.log("Sending search request:", requestBody);
+      
+      const response = await fetch(this.apiEndpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "api-key": this.apiKey,
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log("Raw API response:", data);
+      
+      const processedResults = this.processSearchResults(data, minSearchScore);
+      console.log("Processed results:", processedResults);
+      
+      return { results: processedResults };
+    } catch (error) {
+      console.error("Azure Search API error:", error);
+      return { 
+        results: [], 
+        error: "I'm having trouble connecting to the search service. Please try again later." 
+      };
+    }
+  },
+
+  processSearchResults(data: any, minSearchScore: number = 0.80): AzureSearchResult[] {
+
+    if (!data) {
+      console.error("No data received from API");
+      return [];
+    }
+    
+    let items = [];
+    
+    if (data.value && Array.isArray(data.value)) {
+      items = data.value;
+    } else if (Array.isArray(data)) {
+      items = data;
+    } else if (typeof data === 'object') {
+      if (data.results && Array.isArray(data.results)) {
+        items = data.results;
+      } else {
+        items = [data];
+      }
+    }
+    
+    if (items.length === 0) {
+      console.warn("No items found in response data");
+      return [];
+    }
+
+    const filteredItems = items.filter(item => {
+      const score = item['@search.score'] || item.searchScore || 0;
+      console.log(`Item score: ${score}`);
+      return score >= minSearchScore;
+    });
+
+    console.log(`Filtered ${items.length} results to ${filteredItems.length} with score >= ${minSearchScore}`);
+
+    return filteredItems.map((item) => {
+      const baseResult = {
+        id: item.id || item.document_id || `result-${Math.random().toString(36).substr(2, 9)}`,
+        fileName: item.filename || item.fileName || item.document_name || "Report",
+        startDate: item.start_date || item.startDate || "N/A",
+        endDate: item.end_date || item.endDate || "N/A",
+        country: item.country || "Global",
+        content: item.content || item.description || "",
+        searchScore: item['@search.score'] || item.searchScore || 0,
+        metrics: [] 
+      };
+      
+      if (baseResult.content) {
+        try {
+
+          const contentStr = baseResult.content.toString();
+          
+          let metricsArray = [];
+          
+          const metricRegexes = [
+            /\*\*(.*?):\*\*\s*([\d,$,.]+)/g,  // **Metric:** Value
+            /-(.*?):\s*([\d,$,.]+)/g,          // - Metric: Value
+            /(.*?):\s*([\d,$,.]+)/g            // Metric: Value
+          ];
+          
+          for (const regex of metricRegexes) {
+            let match;
+            while ((match = regex.exec(contentStr)) !== null) {
+              const metricName = match[1].trim();
+              const metricValue = match[2].trim();
+              
+              if (!metricsArray.some(m => m.name === metricName)) {
+                metricsArray.push({ name: metricName, value: metricValue });
+              }
+            }
+            
+            if (metricsArray.length > 0) break;
+          }
+          
+          baseResult.metrics = metricsArray;
+        } catch (err) {
+          console.error("Error parsing content metrics:", err);
+        }
+      }
+      
+      return baseResult;
+    });
+  }
 };
 
 // Main Chat Component
@@ -274,7 +365,7 @@ const ReportSearch: React.FC<ReportSearchProps> = ({ query}) => {
 
   const searchAzureAndGenerateResponse = async (query: string): Promise<Message> => {
     try {
-      const searchResponse = await azureSearchService.searchReports(query, 2, 0.80);
+      const searchResponse = await azureSearchService.searchReports(query, 2, 0.8);
 
       if (searchResponse.error) {
         return {
@@ -286,17 +377,17 @@ const ReportSearch: React.FC<ReportSearchProps> = ({ query}) => {
       
       if (searchResponse.results.length === 0) {
         return {
-          text: `I couldn't find any results. Please try a different search term.`,
+          text: `I couldn't find any results for "${query}". Please try a different search term.`,
           isUser: false,
           timestamp: new Date(),
         };
       }
       
-      let responseText = `Here's what I found for "${query}" \n\n`;
+      let responseText = `Here's what I found for "${query}"\n\n`;
       
       const countryList = [...new Set(searchResponse.results.map(result => result.country))].join(", ");
       
-      responseText += `Relevant ${
+      responseText += `I found ${searchResponse.results.length} relevant ${
         searchResponse.results.length === 1 ? "report" : "reports"
       } from ${countryList}.`;
       
@@ -408,6 +499,7 @@ const ReportSearch: React.FC<ReportSearchProps> = ({ query}) => {
 
   return (
     <div className="flex flex-col bg-gray-50 rounded-lg shadow-md overflow-hidden h-full">
+
       <div className="flex-1 p-4 overflow-y-auto bg-gray-50 pb-20" ref={chatContainerRef}>
         {messages.map((message, index) => (
           <ChatBubble key={index} message={message} />
@@ -416,6 +508,7 @@ const ReportSearch: React.FC<ReportSearchProps> = ({ query}) => {
         <div ref={messagesEndRef} />
       </div>
 
+      {/* Fixed input at bottom */}
       <div className="fixed bottom-0 left-0 right-0 px-4 py-4 bg-white shadow-lg">
         <div className="flex items-center gap-2 max-w-6xl mx-auto">
           <input
