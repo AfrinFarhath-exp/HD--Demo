@@ -87,7 +87,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     try {
       const response = await axios.post<SearchResult[]>(
         "https://hd-dddrdnc2amfvdrcw.eastasia-01.azurewebsites.net/Support_search",
-        { query: content }
+        { query: content ,top_k:1}
       );
       const results = response.data;
 
