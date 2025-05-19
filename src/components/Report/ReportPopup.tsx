@@ -9,10 +9,10 @@ const ReturnPopup = ({
 }: {
   title?: string;
   handleClose: () => void;
-  onViewReport: (data: { title: string; startDate: string; endDate: string }) => void;
+  onViewReport: (data: { title: string; startDate: string;  }) => void;
 }) => {
   const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  // const [endDate, setEndDate] = useState("");
   const [visible, setVisible] = useState(false);
   const [showReport, setShowReport] = useState(false); // new state to control report display
 
@@ -23,8 +23,7 @@ const ReturnPopup = ({
   const handleViewReport = () => {
     onViewReport({
       title: title ?? "",
-      startDate,
-      endDate,
+      startDate
     });
     setShowReport(true); // show the ReportSearch component
   };
@@ -71,8 +70,8 @@ const ReturnPopup = ({
             position: "absolute",
             top: theme.spacing.sm,
             right: theme.spacing.sm,
-            backgroundColor: "#000",
-            color: "#fff",
+            // backgroundColor: "#000",
+            color: "#000",
             border: "none",
             borderRadius: "60%",
             width: "27px",
@@ -118,7 +117,7 @@ const ReturnPopup = ({
                 marginBottom: theme.spacing.xs,
               }}
             >
-              Start Date
+              Select Date
             </label>
             <input
               type="date"
@@ -139,41 +138,8 @@ const ReturnPopup = ({
               }}
             />
           </div>
-
-          <div>
-            <label
-              style={{
-                display: "block",
-                fontSize: theme.typography.fontSize.sm,
-                fontWeight: theme.typography.fontWeight.semibold,
-                marginBottom: theme.spacing.xs,
-              }}
-            >
-              End Date
-            </label>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              onMouseOver={(e) =>
-                (e.currentTarget.style.backgroundColor = "#fff3e0")
-              }
-              onMouseOut={(e) =>
-                (e.currentTarget.style.backgroundColor = "white")
-              }
-              style={{
-                width: "100%",
-                border: `2px solid ${theme.colors.text.primary}`,
-                borderRadius: theme.borderRadius.md,
-                padding: theme.spacing.sm,
-                fontSize: theme.typography.fontSize.md,
-              }}
-            />
-          </div>
-        </div>
-
-        {/* View Report Button */}
-        <div style={{ textAlign: "center" }}>
+                {/* View Report Button */}
+        <div style={{marginTop:"26px"}}>
           <button
             onClick={handleViewReport}
             style={{
@@ -198,12 +164,14 @@ const ReturnPopup = ({
           </button>
         </div>
 
+         </div>
+      
+
         {/* Conditionally render ReportSearch */}
         {showReport && (
           <ReportSearch
             title={title}
             startDate={startDate}
-            endDate={endDate}
           />
         )}
       </div>
