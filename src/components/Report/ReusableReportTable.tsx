@@ -88,12 +88,16 @@ const ReusableReportTable: React.FC<Props> = ({
   }
 
   return (
-    <>
-      <h2 className="text-small font-semibold mb-4 text-center">{reportName}</h2>
-     
-        <TableContainer
+    <div className="w-full h-full flex flex-col">
+      <div className="bg-white"><h2 className="text-lg font-semibold mb-4 text-center">{reportName}</h2>
+      <p className="text-black text-gray-500 mb-4 text-center">
+        {startDate} to {endDate}
+      </p></div>
+      
+      <div className="flex-grow flex justify-center">
+     <TableContainer
           component={Paper}
-         className="overflow-auto border rounded-md"
+         className="overflow-visible border rounded-md"
         
             style={{ maxHeight: 800, maxWidth: 1000 }}
         >
@@ -151,9 +155,11 @@ const ReusableReportTable: React.FC<Props> = ({
             </TableBody>
           </Table>
         </TableContainer>
-    
-    </>
+      </div>
+    </div>
   );
 };
+
+
 
 export default ReusableReportTable;

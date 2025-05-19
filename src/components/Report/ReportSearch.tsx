@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { MessageCircle, Send } from "lucide-react";
+import { MessageCircle, Send, Maximize2, X } from "lucide-react";
 import ReusableReportTable from "./ReusableReportTable";
 
 // Type Definitions
@@ -95,6 +95,35 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message, reportComponent }) => 
   );
 };
 
+// Modal Component for Report
+const ReportModal = ({ isOpen, onClose, reportName, startDate, endDate }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg shadow-xl w-11/12 h-3/4 max-w-6xl overflow-hidden">
+        <div className="flex justify-between items-center p-4 border-b">
+          <h3 className="font-medium text-lg">{reportName}</h3>
+          <button
+            onClick={onClose}
+            className="p-1 rounded-full hover:bg-gray-200 transition-colors"
+            aria-label="Close modal"
+          >
+            <X size={24} /> 
+          </button>
+        </div>
+        <div className="w-11/12 h-3/4 h-full overflow-scroll">
+          <ReusableReportTable
+            reportName={reportName}
+            startDate={startDate}
+            endDate={endDate}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Main Chat Component
 const ReportSearch: React.FC<ReportSearchProps> = ({ query }) => {
   const [loading, setLoading] = useState<boolean>(false);
@@ -103,6 +132,17 @@ const ReportSearch: React.FC<ReportSearchProps> = ({ query }) => {
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
   const hasHandledInitialQuery = useRef<boolean>(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [currentReport, setCurrentReport] = useState({
+    name: "",
+    startDate: "",
+    endDate: ""
+  });
+
+  const openReportInModal = (reportName: string, startDate: string, endDate: string) => {
+    setCurrentReport({ name: reportName, startDate, endDate });
+    setModalOpen(true);
+  };
 
   const generateBotResponse = (message: string): { botResponse: Message; reportComponent: React.ReactNode | null } => {
     if (message.trim().toLowerCase().includes("sac")) {
@@ -114,7 +154,25 @@ const ReportSearch: React.FC<ReportSearchProps> = ({ query }) => {
           showDisplay: true,
         },
         reportComponent: (
-          <ReusableReportTable reportName="SAC Report" startDate="2025-05-13" endDate="2025-05-14" />
+          <div className="bg-white w-full mt-4 rounded-lg overflow-hidden">
+            <div className="flex justify-between items-center p-2 bg-gray-50 border-b">
+              <h3 className="font-medium">SAC Report</h3>
+              <button
+                onClick={() => openReportInModal("SAC Report", "2025-05-13", "2025-05-14")}
+                className="p-1 rounded hover:bg-gray-200 transition-colors"
+                aria-label="View in larger modal"
+              >
+                <Maximize2 size={18} />
+              </button>
+            </div>
+            <div className="w-full" style={{ height: "300px" }}>
+              <ReusableReportTable
+                reportName="SAC Report"
+                startDate="2025-05-13"
+                endDate="2025-05-14" 
+              />
+            </div>
+          </div>
         ),
       };
     } else {
@@ -143,7 +201,9 @@ const ReportSearch: React.FC<ReportSearchProps> = ({ query }) => {
       setLoading(true);
       setTimeout(() => {
         const { botResponse, reportComponent } = generateBotResponse(query);
-        setMessages((prev) => [...prev, { ...botResponse, reportComponent }]);
+        setMessages((prev) => {
+          return [...prev, { ...botResponse, reportComponent }];
+        });
         setLoading(false);
       }, 1500);
     } else if (!query) {
@@ -158,12 +218,12 @@ const ReportSearch: React.FC<ReportSearchProps> = ({ query }) => {
   }, [query]);
 
   useEffect(() => {
-  const scrollTimeout = setTimeout(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, 50); // Wait a bit to allow DOM to render
+    const scrollTimeout = setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 50); // Wait a bit to allow DOM to render
 
-  return () => clearTimeout(scrollTimeout);
-}, [messages]);
+    return () => clearTimeout(scrollTimeout);
+  }, [messages]);
 
   const handleSendMessage = (): void => {
     if (!inputMessage.trim()) return;
@@ -192,44 +252,45 @@ const ReportSearch: React.FC<ReportSearchProps> = ({ query }) => {
   };
 
   return (
-  <div className="relative  bg-gray-50  shadow-md ">
-    <div
-      ref={chatContainerRef}
-      className="overflow-y-auto pb-24 px-4 pt-4"
-      // style={{ height: "100vh" }} 
-    >
-      {messages.map((message, index) => (
-        <ChatBubble key={index} message={message} reportComponent={message.reportComponent} />
-      ))}
+    <div className="flex flex-col bg-gray-50 rounded-lg shadow-md overflow-hidden h-full">
+      <div className="flex-1 p-4 overflow-y-auto bg-gray-50" ref={chatContainerRef}>
+        {messages.map((message, index) => (
+          <ChatBubble key={index} message={message} reportComponent={message.reportComponent} />
+        ))}
+        <ThinkingIndicator isThinking={loading} />
+        <div ref={messagesEndRef} />
+      </div>
 
-      <ThinkingIndicator isThinking={loading} />
-      <div ref={messagesEndRef} />
-    </div>
+      {/* Modal */}
+      <ReportModal 
+        isOpen={modalOpen} 
+        onClose={() => setModalOpen(false)} 
+        reportName={currentReport.name}
+        startDate={currentReport.startDate}
+        endDate={currentReport.endDate}
+      />
 
-    {/* Fixed input at bottom */}
-    <div className="fixed bottom-0 left-1/3 transform -translate-x-1/4 px-10 py-4 shadow-lg w-full max-w-8xl">
-     <div className="flex  items-center gap-6 max-w-6xl mx-auto">
-        <input
-          type="text"
-          value={inputMessage}
-          onChange={(e) => setInputMessage(e.target.value)}
-          onKeyPress={handleKeyPress}
-          placeholder="Search more reports..."
-          className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-gray-200 shadow-sm"
-        />
-        <button
-          onClick={handleSendMessage}
-          className="ml-2 p-3 bg-primary text-white rounded-full hover:bg-primary focus:outline-none focus:ring-2 focus:bg-primary shadow-md"
-        >
-          <Send size={20} />
-        </button>
+      {/* Fixed input at bottom */}
+      <div className="fixed bottom-0 left-1/3 transform -translate-x-1/4 px-10 py-4 shadow-lg w-full max-w-8xl">
+        <div className="flex items-center gap-6 max-w-6xl mx-auto">
+          <input
+            type="text"
+            value={inputMessage}
+            onChange={(e) => setInputMessage(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Search more reports..."
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-gray-200 shadow-sm"
+          />
+          <button
+            onClick={handleSendMessage}
+            className="ml-2 p-3 bg-primary text-white rounded-full hover:bg-primary focus:outline-none focus:ring-2 focus:bg-primary shadow-md"
+          >
+            <Send size={20} />
+          </button>
+        </div>
       </div>
     </div>
-  </div>
-);
-
-
-
+  );
 };
 
 export default ReportSearch;
