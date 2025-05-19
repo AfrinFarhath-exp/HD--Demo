@@ -20,7 +20,6 @@ interface ChatBubbleProps {
 
 interface ReportSearchProps {
   query?: string;
-  
   minSearchScore?: number; 
 }
 
