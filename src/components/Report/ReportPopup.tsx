@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from "react";
+import Select from "react-select";
 import { theme } from "../../theme";
 import ReportSearch from "../../components/Report/ReportSearch";
+
+const countries = [
+  { value: "US", label: "United States" },
+  { value: "CA", label: "Canada" },
+];
 
 const ReturnPopup = ({
   title = "Returns Report",
@@ -9,12 +15,12 @@ const ReturnPopup = ({
 }: {
   title?: string;
   handleClose: () => void;
-  onViewReport: (data: { title: string; startDate: string;  }) => void;
+  onViewReport: (data: { title: string; startDate: string }) => void;
 }) => {
   const [startDate, setStartDate] = useState("");
-  // const [endDate, setEndDate] = useState("");
   const [visible, setVisible] = useState(false);
-  const [showReport, setShowReport] = useState(false); // new state to control report display
+  const [showReport, setShowReport] = useState(false);
+  const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
 
   useEffect(() => {
     setVisible(true);
@@ -23,14 +29,14 @@ const ReturnPopup = ({
   const handleViewReport = () => {
     onViewReport({
       title: title ?? "",
-      startDate
+      startDate,
     });
-    setShowReport(true); // show the ReportSearch component
+    setShowReport(true);
+    console.log("selectedCountries", selectedCountries);
   };
 
   return (
     <>
-      {/* Animation Keyframes */}
       <style>
         {`
           @keyframes slideJumpFade {
@@ -70,7 +76,6 @@ const ReturnPopup = ({
             position: "absolute",
             top: theme.spacing.sm,
             right: theme.spacing.sm,
-            // backgroundColor: "#000",
             color: "#000",
             border: "none",
             borderRadius: "60%",
@@ -81,13 +86,12 @@ const ReturnPopup = ({
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            margin: `10px 10px 10px 10px`,
+            margin: `10px`,
           }}
         >
           &times;
         </button>
 
-        {/* Title */}
         <h2
           style={{
             fontSize: theme.typography.fontSize.xxl,
@@ -99,7 +103,6 @@ const ReturnPopup = ({
           {title}
         </h2>
 
-        {/* Date inputs */}
         <div
           style={{
             display: "grid",
@@ -138,10 +141,53 @@ const ReturnPopup = ({
               }}
             />
           </div>
-                {/* View Report Button */}
 
-        <div style={{marginTop:"37px"}}>
-    
+          <div>
+            <label
+              style={{
+                display: "block",
+                fontSize: theme.typography.fontSize.sm,
+                fontWeight: theme.typography.fontWeight.semibold,
+                marginBottom: theme.spacing.md,
+              }}
+            >
+              Select Country
+            </label>
+            <Select
+              isMulti
+              options={countries}
+              value={countries.filter((option) =>
+                selectedCountries.includes(option.value)
+              )}
+              onChange={(selectedOptions) => {
+                const values = selectedOptions.map((opt) => opt.value);
+                setSelectedCountries(values);
+              }}
+              styles={{
+                control: (base) => ({
+                  ...base,
+                  border: `2px solid ${theme.colors.text.primary}`,
+                  borderRadius: theme.borderRadius.md,
+                  padding: "2px",
+                  fontSize: theme.typography.fontSize.md,
+                }),
+                option: (base, state) => ({
+                  ...base,
+                  backgroundColor: state.isFocused ? "#fff3e0" : "white",
+                  color: theme.colors.text.primary,
+                }),
+              }}
+            />
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginTop: "24px",
+          }}
+        >
           <button
             onClick={handleViewReport}
             style={{
@@ -154,6 +200,10 @@ const ReturnPopup = ({
               border: "none",
               cursor: "pointer",
               transition: "all 0.3s ease",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              minWidth: "160px", // Ensures consistent width
             }}
             onMouseOver={(e) =>
               (e.currentTarget.style.backgroundColor = theme.colors.hover)
@@ -166,14 +216,11 @@ const ReturnPopup = ({
           </button>
         </div>
 
-         </div>
-      
-
-        {/* Conditionally render ReportSearch */}
         {showReport && (
           <ReportSearch
             title={title}
             startDate={startDate}
+            selectedCountries={selectedCountries}
           />
         )}
       </div>
