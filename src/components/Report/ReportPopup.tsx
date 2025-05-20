@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Select from "react-select";
 import { theme } from "../../theme";
 import ReportSearch from "../../components/Report/ReportSearch";
+import ReusableReportTable from "./ReusableReportTable";
 
 const countries = [
   { value: "US", label: "United States" },
@@ -9,32 +10,107 @@ const countries = [
 ];
 
 const ReturnPopup = ({
-  title = "Returns Report",
+  // title = "Returns Report",
   handleClose,
   onViewReport,
 }: {
   title?: string;
   handleClose: () => void;
-  onViewReport: (data: { title: string; startDate: string }) => void;
+  onViewReport: (data: {  startDate: string }) => void;
 }) => {
+const [contentUs, setContentUs] = useState("");
+const [contentCa, setContentCa] =useState("");
+
   const [startDate, setStartDate] = useState("");
   const [visible, setVisible] = useState(false);
   const [showReport, setShowReport] = useState(false);
   const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
+  const [reportData, setReportData] = useState<
+    { country: string; data: any }[]
+  >([]);
 
   useEffect(() => {
     setVisible(true);
   }, []);
 
-  const handleViewReport = () => {
-    onViewReport({
-      title: title ?? "",
-      startDate,
-    });
-    setShowReport(true);
-    console.log("selectedCountries", selectedCountries);
-  };
+  
+const API_KEY = "8EhgReELYz1ubhefjbu3ypHQu3izCzx05so65jpkUjLvKUi3oEj8JQQJ99BEACYeBjFXJ3w3AAABACOGQKn6"; 
+const API_ENDPOINT= "https://hd-dddrdnc2amfvdrcw.eastasia-01.azurewebsites.net/Metrics_search";
+const handleViewReport = async () => {
+  try {
+    if (!selectedCountries.length) {
+      alert("Please select at least one country.");
+      return;
+    }
 
+    const responses = await Promise.all(
+      selectedCountries.map(async (country) => {
+        // Format date as dd/mm/yyyy
+        const formattedDate = new Date(startDate).toLocaleDateString("en-GB");
+
+        // Build query string as requested
+        const query = `${title}on ${formattedDate}`;
+
+        const requestBody = {
+          query,
+          top_k: 2,
+        };
+console.log("requestbody",requestBody)
+        const res = await fetch(API_ENDPOINT, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "api-key": API_KEY,
+          },
+          body: JSON.stringify(requestBody),
+        });
+
+        if (!res.ok) {
+          throw new Error(`Failed to fetch for ${country}: ${res.statusText}`);
+        }
+
+        const data = await res.json();
+        console.log("reporttake", data);
+        
+        return data;
+        
+      })
+    );
+
+   
+        const allData = responses.flat();
+console.log("allData", allData);
+
+const caItems = allData.filter(item => item.content?.includes("**Country:** CA"));
+const content_ca = caItems.length ? caItems[caItems.length - 1].content : "";
+
+
+const usItems = allData.filter(item => item.content?.includes("**Country:** US"));
+const content_us = usItems.length ? usItems[usItems.length - 1].content : "";
+console.log("contentUs",content_us);
+console.log("contentUs",content_ca);
+
+
+    setReportData(allData); // store if needed
+    setShowReport(true);
+   setContentUs(content_us ? content_us : "");
+setContentCa(content_ca ?content_ca: "");
+
+   //  console.log("contentUs",contentUs);
+//      console.log("contentCa",contentCa);
+
+
+
+    setShowReport(true);
+    onViewReport({ startDate });
+  } catch (err) {
+    console.error("API Error:", err);
+    alert("Failed to load report. Please try again.");
+  }
+};
+
+//  console.log("contentUs",contentUs);
+//      console.log("contentCa",contentCa);
   return (
     <>
       <style>
@@ -203,7 +279,7 @@ const ReturnPopup = ({
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
-              minWidth: "160px", // Ensures consistent width
+              minWidth: "160px",
             }}
             onMouseOver={(e) =>
               (e.currentTarget.style.backgroundColor = theme.colors.hover)
@@ -218,14 +294,24 @@ const ReturnPopup = ({
 
         {showReport && (
           <ReportSearch
-            title={title}
             startDate={startDate}
-            selectedCountries={selectedCountries}
+            reportData={reportData} // Pass combined data here
           />
         )}
+       {showReport && (
+ <ReusableReportTable
+  reportName="Performance Summary"
+  content_us={contentUs}
+  content_ca={contentCa}
+/>
+
+)}
+
+
       </div>
     </>
   );
 };
 
 export default ReturnPopup;
+
