@@ -5,12 +5,12 @@ const TopBar: React.FC = () => {
   return (
     <div className="h-16 border-b border-gray-200 flex items-center justify-between px-6">
       <div className="flex items-center">
-        {/* <img
+        <img
           src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Harley-Davidson_logo.svg/1200px-Harley-Davidson_logo.svg.png"
           alt="Harley Davidson Logo"
           className="h-10 w-auto mr-4"
-        /> */}
-        <h1 className="text-xl font-semibold">H-D Support Portal</h1>
+        />
+        <h1 className="text-xl font-semibold">H-D Ops Portal</h1>
       </div>
       
       <div className="flex items-center space-x-4">
