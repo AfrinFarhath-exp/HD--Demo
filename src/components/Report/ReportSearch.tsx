@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { MessageCircle, Send, Maximize2, X, ChevronRight } from "lucide-react";
+import { MessageCircle, Send, Maximize2, X } from "lucide-react";
 import { azureSearchService } from "./azureSearchService";
 
 // Type Definitions
@@ -8,7 +8,6 @@ interface Message {
   isUser: boolean;
   timestamp: Date;
   showDisplay?: boolean;
-  tableData?: AzureSearchResult[];
 }
 
 interface ThinkingIndicatorProps {
@@ -203,37 +202,6 @@ const ResponseModal: React.FC<BotMessageModalProps> = ({
   );
 };
 
-const ReportCard: React.FC<{
-  data: AzureSearchResult;
-  onClick: () => void;
-}> = ({ data, onClick }) => {
-  return (
-    <div
-      onClick={onClick}
-      className="bg-white border rounded-lg p-3 mb-2 cursor-pointer hover:shadow-md transition-shadow"
-    >
-      <div className="flex justify-between items-center">
-        <h4 className="font-medium text-sm truncate">
-          {data.fileName || "Report"}
-        </h4>
-        <Maximize2 size={16} className="text-gray-500" />
-      </div>
-      <div className="flex justify-between text-xs text-gray-500 mt-1">
-        <span>{data.country}</span>
-        <span>
-          {data.startDate} - {data.endDate}
-        </span>
-      </div>
-      {data.content && (
-        <div className="mt-2 text-xs text-gray-600 line-clamp-2 overflow-hidden">
-          {data.content.length > 150
-            ? `${data.content.substring(0, 150)}...`
-            : data.content}
-        </div>
-      )}
-    </div>
-  );
-};
 
 const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
   const formatTime = (date: Date): string => {
@@ -246,10 +214,6 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
   );
   const [botMessageModalOpen, setBotMessageModalOpen] = useState(false);
 
-  const openModal = (data: AzureSearchResult) => {
-    setSelectedData(data);
-    setModalOpen(true);
-  };
 
   const openBotMessageModal = () => {
     if (!message.isUser) {
@@ -298,47 +262,6 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
             )}
           </div>
 
-          {message.showDisplay &&
-            message.tableData &&
-            message.tableData.length > 0 && (
-              <div className="mt-3">
-                {message.tableData.length > 1 && (
-                  <p className="text-xs text-gray-500 mb-2">
-                    {message.tableData.length} reports found. Click to view
-                    details.
-                  </p>
-                )}
-
-                <div className="space-y-2">
-                  {message.tableData.slice(0, 3).map((item, idx) => (
-                    <ReportCard
-                      key={item.id || idx}
-                      data={item}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openModal(item);
-                      }}
-                    />
-                  ))}
-
-                  {message.tableData.length > 3 && (
-                    <button
-                      className="flex items-center justify-center w-full p-2 text-xs text-blue-600 hover:text-blue-800 bg-white border rounded-lg"
-                      onClick={(e) => {
-                        e.stopPropagation();
-
-                        if (message.tableData && message.tableData.length > 0) {
-                          openModal(message.tableData[0]);
-                        }
-                      }}
-                    >
-                      View all {message.tableData.length} reports{" "}
-                      <ChevronRight size={14} />
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
 
           <span
             className={`text-xs block mt-2 ${
@@ -436,7 +359,6 @@ const ReportSearch: React.FC<ReportSearchProps> = ({ query, session_id }) => {
         isUser: false,
         timestamp: new Date(),
         showDisplay: true,
-        tableData: searchResponse.results,
       };
     } catch (error) {
       console.error("Error processing search:", error);
