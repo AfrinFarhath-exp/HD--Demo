@@ -1,4 +1,5 @@
 import type { Message } from "../../types";
+import ReactMarkdown from "react-markdown";
 
 type ChatBubbleProps = {
   message: Message;
@@ -63,7 +64,10 @@ export default function ChatBubble({ message }: ChatBubbleProps) {
           <div className="text-sm text-gray-600">
             {message.role} • {new Date(message.timestamp).toLocaleTimeString()}
           </div>
-          <div className="mt-1">{message.content}</div>
+
+          <div className="mt-1 prose prose-sm max-w-full text-gray-800">
+            <ReactMarkdown>{message.content}</ReactMarkdown>
+          </div>
           {!isUser && (
             <div className="mt-4 flex items-center space-x-2">
               <button className="p-1 rounded-full hover:bg-gray-100 transition-colors">

@@ -1,0 +1,9 @@
+[
+  {
+    "@search.score": 0.555565,
+    "id": "aaaaaaaaaaaaaaa",
+    "filename": "error_log.txt",
+    "lastmodified": "2025-05-14T05:33:19.009Z",
+    "content": "ERROR 8: Sold to party XXXXX not maintained for sales area XXXX XX XX. Open data records, click on ZH and check the dealer number. Since its a 5-digit number we can understand it is a CA dealership order. Open ZB and check if it has CA region related information. Similarly check ZF, RG, AG, RE and 008 ending node. If the ORG ID in 008 ending node is not correct (i.e, for CA dealership order ORGID should be 1670) we have to change that to 1670 and save the order. Copy the Idoc and process the saved order in /obd87."
+  }
+]

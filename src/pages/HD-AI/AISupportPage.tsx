@@ -43,7 +43,7 @@ const AISupportPage: React.FC = () => {
             onSuggestionClick={handleSuggestionClick}
           />
         </div>
-        
+         
         <div className={`w-full transition-all duration-300 ${showChat ? 'scale-100 opacity-100' : 'scale-95 opacity-0 hidden'}`}>
           <div className="flex items-center justify-between mb-6">
             <button

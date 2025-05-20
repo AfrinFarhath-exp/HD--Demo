@@ -17,10 +17,20 @@ const SideNav: React.FC = () => {
   return (
     <div className="group flex flex-col h-full bg-black text-white transition-[width] duration-700 ease-in-out w-20 hover:w-64 overflow-hidden">
       <div className="py-6 px-4">
-        <div className="text-primary font-bold text-2xl relative h-6">
-          <span className="block group-hover:opacity-0 transition-opacity duration-700 ease-in-out">H-D</span>
-          <span className="absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-in-out">H-D</span>
-        </div>
+        <div className="text-primary font-bold text-2xl relative w-full overflow-hidden">
+  <span className="block group-hover:hidden transition-opacity duration-100 ease-linear whitespace-nowrap">
+    H-D
+  </span>
+  <span className="hidden group-hover:inline-block transition-opacity duration-100 delay-200 ease-linear whitespace-nowrap">
+    Harley Davidson
+  </span>
+</div>
+
+
+
+
+
+
       </div>
       
       <nav className="flex-1 mt-6">
@@ -29,18 +39,29 @@ const SideNav: React.FC = () => {
             <li key={item.path}>
               <button
                 onClick={() => navigate(item.path)}
-                className={`flex items-center w-full py-3 rounded-md transition-colors duration-700 ease-in-out${
-                  isActive(item.path)
-                    ? `bg-primary text-white`
-                    : `text-gray-300 hover:bg-gray-800`
-                }`}
-                style={{ color: isActive(item.path) ? theme.colors.text.light : theme.colors.gray[300] }}
+                onMouseEnter={(e) => {
+                  if (!isActive(item.path)) {
+                    e.currentTarget.style.backgroundColor = theme.colors.gray[700];
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActive(item.path)) {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }
+                }}
+                className={`flex items-center w-full py-3 rounded-none transition-colors duration-300 ease-in-out`}
+                style={{
+                  backgroundColor: isActive(item.path) ? theme.colors.active : undefined,
+                  color: isActive(item.path) ? theme.colors.text.light : theme.colors.gray[300],
+                }}
               >
                 <span className="min-w-[64px] flex justify-center">{item.icon}</span>
-                <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-in-out whitespace-nowrap">
+                <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out whitespace-nowrap">
                   {item.label}
                 </span>
               </button>
+
+
             </li>
           ))}
         </ul>

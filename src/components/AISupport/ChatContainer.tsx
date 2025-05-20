@@ -4,6 +4,8 @@ import type { Message, IdocIssue, SuggestedQuestion } from "../../types";
 import { Send, Paperclip } from "lucide-react";
 import IdocIssueCard from "./IdocIssueCard";
 import { v4 as uuidv4 } from "uuid";
+import { queryAgent } from "../../api/apiService";
+
 
 interface ChatContainerProps {
   selectedIdocIssue?: IdocIssue | null;
@@ -34,26 +36,25 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
         },
       ]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (searchQuery) {
-      handleUserMessage(searchQuery);
+      if (searchQuery.toLowerCase().includes("idoc")) {
+        handleAssistantIdocResponse(searchQuery);
+      } else {
+        handleUserMessage(searchQuery);
+      }
     }
   }, [searchQuery]);
 
   useEffect(() => {
     if (selectedQuestion) {
       if (selectedQuestion.type === "idoc") {
-        handleUserMessage(selectedQuestion.text);
-        setTimeout(() => {
-          handleAssistantIdocResponse();
-        }, 1000);
+        handleAssistantIdocResponse(selectedQuestion.text);
       } else {
-        handleUserMessage(selectedQuestion.text);
-        setTimeout(() => {
-          handleAssistantGeneralResponse(selectedQuestion.text);
-        }, 1000);
+        handleAssistantGeneralResponse(selectedQuestion.text);
       }
     }
   }, [selectedQuestion]);
@@ -64,7 +65,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     }
   }, [selectedIdocIssue]);
 
-  const handleUserMessage = (content: string) => {
+  const handleUserMessage = async (content: string) => {
     const newMessage: Message = {
       id: uuidv4(),
       content,
@@ -73,9 +74,56 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     };
     setMessages((prev) => [...prev, newMessage]);
     setInput("");
+
+    const loadingMessage: Message = {
+      id: uuidv4(),
+      content: "",
+      role: "assistant",
+      timestamp: new Date(),
+      isLoading: true,
+    };
+
+    setMessages((prev) => [...prev, loadingMessage]);
+
+    try {
+      const sessionId = "static-session";
+      const finalOutput = await queryAgent(content, sessionId);
+
+      setMessages((prev) => prev.filter((msg) => !msg.isLoading));
+
+      const responseMessage: Message = {
+        id: uuidv4(),
+        content: finalOutput,
+        role: "assistant",
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, responseMessage]);
+    } catch (error) {
+      console.error("Error fetching response:", error);
+      setMessages((prev) => prev.filter((msg) => !msg.isLoading));
+
+      const errorMessage: Message = {
+        id: uuidv4(),
+        content: "An error occurred. Please try again.",
+        role: "assistant",
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, errorMessage]);
+    }
   };
 
-  const handleAssistantIdocResponse = () => {
+  const handleAssistantIdocResponse = (query: string) => {
+    const userMessage: Message = {
+      id: uuidv4(),
+      content: query,
+      role: "user",
+      timestamp: new Date(),
+    };
+    setMessages((prev) => [...prev, userMessage]);
+    setInput("");
+
     const loadingMessage: Message = {
       id: uuidv4(),
       content: "",
@@ -103,6 +151,14 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   };
 
   const handleAssistantGeneralResponse = (query: string) => {
+    const userMessage: Message = {
+      id: uuidv4(),
+      content: query,
+      role: "user",
+      timestamp: new Date(),
+    };
+    setMessages((prev) => [...prev, userMessage]);
+
     const loadingMessage: Message = {
       id: uuidv4(),
       content: "",
@@ -118,7 +174,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
 
       const responseMessage: Message = {
         id: uuidv4(),
-        content: `I'll help you find information about "${query}". Let me search our knowledge base...`,
+        content: `I'll help you find information about "${query}". Please provide more details or select an issue.`,
         role: "assistant",
         timestamp: new Date(),
       };
@@ -163,38 +219,19 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     }, 2000);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
 
-    handleUserMessage(input);
+    if (input.toLowerCase().includes("idoc")) {
+      handleAssistantIdocResponse(input);
+    } else {
+      handleUserMessage(input);
+    }
 
     if (showIdocIssues) {
       setShowIdocIssues(false);
     }
-
-    const loadingMessage: Message = {
-      id: uuidv4(),
-      content: "",
-      role: "assistant",
-      timestamp: new Date(),
-      isLoading: true,
-    };
-
-    setMessages((prev) => [...prev, loadingMessage]);
-
-    setTimeout(() => {
-      setMessages((prev) => prev.filter((msg) => !msg.isLoading));
-
-      const responseMessage: Message = {
-        id: uuidv4(),
-        content: `I'll help you with "${input}". Let me check our knowledge base...`,
-        role: "assistant",
-        timestamp: new Date(),
-      };
-
-      setMessages((prev) => [...prev, responseMessage]);
-    }, 1500);
   };
 
   useEffect(() => {
@@ -202,7 +239,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
   }, [messages, showIdocIssues]);
 
   return (
-    <div className="flex flex-col bg-gray-50 rounded-lg overflow-hidden h-full mb-0 " >
+    <div className="flex flex-col bg-gray-50 rounded-lg overflow-hidden h-full mb-0">
       <div className="flex-1 overflow-y-auto p-0">
         <div className="max-w-4xl mx-auto space-y-4">
           {messages.map((message) => (
