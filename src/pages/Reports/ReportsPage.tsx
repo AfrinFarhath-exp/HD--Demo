@@ -3,7 +3,7 @@ import ReportCard from "../../components/Report/ReportCard";
 import reports from "../../data/report";
 import ReturnPopup from "../../components/Report/ReportPopup";
 import ReusableReportTable from "../../components/Report/ReusableReportTable";
-
+import Report from "../Reports/report";
 export default function ReportsPage() {
   const [showModal, setShowModal] = useState(false);
   const [selectedReport, setSelectedReport] = useState("");
@@ -43,7 +43,7 @@ export default function ReportsPage() {
           className="w-full sm:w-1/2 px-4 py-2 border rounded-lg shadow-sm focus:outline-none"
         />
       </div>
-
+<Report/>
       <div className="flex flex-wrap justify-center gap-4 pt-10">
         {firstRow.map((report) => (
           <ReportCard
