@@ -153,31 +153,18 @@ export default function ReportsPage() {
 
       {/* First Row: 5 Cards */}
       <div className="w-full flex justify-center pt-10">
-        <div className="grid grid-cols-5 gap-9">
-          {firstRow.map((report) => (
-            <ReportCard
-              key={report.title}
-              title={report.title}
-              onClick={() => handleCardClick(report.title)}
-            />
-          ))}
-        </div>
-      </div>
+  <div className="flex flex-wrap gap-4 justify-center">
+    {reports.map((report) => (
+      <ReportCard
+        key={report.title}
+        title={report.title}
+        onClick={() => handleCardClick(report.title)}
+      />
+    ))}
+  </div>
+</div>
 
-      <div className="h-8" />
 
-      {/* Second Row: 4 Cards */}
-      <div className="w-full flex justify-center">
-        <div className="grid grid-cols-4 gap-4">
-          {secondRow.map((report) => (
-            <ReportCard
-              key={report.title}
-              title={report.title}
-              onClick={() => handleCardClick(report.title)}
-            />
-          ))}
-        </div>
-      </div>
 
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[100]">

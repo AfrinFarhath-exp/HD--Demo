@@ -1,5 +1,5 @@
 import { FileText } from "lucide-react";
-import { Card, CardActionArea, Box, Typography } from "@mui/material";
+import { Card, Box, Typography } from "@mui/material";
 
 type ReportCardProps = {
   title: string;
@@ -9,53 +9,31 @@ type ReportCardProps = {
 export default function ReportCard({ title, onClick }: ReportCardProps) {
   return (
     <Card
+      onClick={onClick}
       sx={{
-        position: "relative",
-        overflow: "hidden",
+        px: 1.5,
+        py: 1,
         borderRadius: 2,
-        minWidth: 200,
-        maxWidth: 300,
         backgroundColor: "#f5f5f5",
         cursor: "pointer",
-        
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 1,
+        border: "1px solid #ddd",
         "&:hover": {
-          
-        },
-        "&::before": {
-          content: '""',
-          position: "absolute",
-          top: "-100%",
-          left: 0,
-          width: "100%",
-          height: "100%",
-         
-          zIndex: 0,
-        },
-        "&:hover::before": {
-          top: 0,
+          borderColor: "#EA580C",
         },
       }}
     >
-      <CardActionArea
-        onClick={onClick}
-        sx={{
-          position: "relative",
-          p: 1.25,
-          zIndex: 1,
-        }}
+      <FileText style={{ color: "#EA580C", width: 20, height: 20 }} />
+      <Typography
+        variant="body2"
+        fontWeight={400}
+        color="text.primary"
+        sx={{ fontSize: "0.825rem", whiteSpace: "nowrap" }}
       >
-        <Box display="flex" alignItems="center" gap={1}>
-          <FileText style={{ color: "#EA580C", width: 20, height: 20 }} />
-          <Typography
-            variant="body2"
-            fontWeight={400}
-            color="text.primary"
-            sx={{ fontSize: "0.825rem" }}
-          >
-            {title}
-          </Typography>
-        </Box>
-      </CardActionArea>
+        {title}
+      </Typography>
     </Card>
   );
 }
