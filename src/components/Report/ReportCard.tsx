@@ -1,5 +1,5 @@
 import { FileText } from "lucide-react";
-import { Card, Box, Typography } from "@mui/material";
+import { Card, Typography } from "@mui/material";
 
 type ReportCardProps = {
   title: string;
@@ -20,6 +20,7 @@ export default function ReportCard({ title, onClick }: ReportCardProps) {
         alignItems: "center",
         gap: 1,
         border: "1px solid #ddd",
+        boxShadow: "none", // Removes default box shadow
         "&:hover": {
           borderColor: "#EA580C",
         },

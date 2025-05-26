@@ -10,156 +10,171 @@ import {
   TableRow,
   Paper,
 } from "@mui/material";
-import { reportData } from "../../data/reportTableData";
 
 interface Props {
   reportName: string;
-  startDate: string;
-  endDate: string;
+  content_us?: string;
+  content_ca?: string;
 }
 
-const parseDate = (dateStr: string): number => {
-  const [year, month, day] = dateStr.split("-").map(Number);
-  return new Date(year, month - 1, day).getTime();
-};
 
-const cleanValue = (val: string): number => {
-  return Number(val.replace(/[^0-9.-]+/g, ""));
+// Function to extract performance metrics from the markdown string
+const extractMetrics = (content: string): Record<string, string> => {
+  console.log("Extracting metrics from:", content);
+  
+  if (!content || typeof content !== 'string') {
+    console.warn("Invalid content provided to extractMetrics:", content);
+    return {};
+  }
+  
+  const metrics: Record<string, string> = {};
+  
+  // Try different formats - first look for markdown-style bullet points
+  const bulletPointRegex = /[-*]\s+([^:]+):\s+(.*)/g;
+  let match;
+  
+  while ((match = bulletPointRegex.exec(content)) !== null) {
+    const label = match[1].trim();
+    const value = match[2].trim();
+    if (label && value) {
+      metrics[label] = value;
+    }
+  }
+  
+  // If we didn't find any metrics with bullet points, try key-value pairs
+  if (Object.keys(metrics).length === 0) {
+    const keyValueRegex = /\*\*([^:*]+):\*\*\s+(.*)/g;
+    
+    while ((match = keyValueRegex.exec(content)) !== null) {
+      const label = match[1].trim();
+      const value = match[2].trim();
+      if (label && value) {
+        metrics[label] = value;
+      }
+    }
+  }
+  
+  // Fallback to simple line parsing if still no metrics
+  if (Object.keys(metrics).length === 0) {
+    const lines = content.split("\n").map(line => line.trim());
+    
+    lines.forEach(line => {
+      if (line.includes(":")) {
+        const [labelPart, ...valueParts] = line.split(":");
+        const label = labelPart.trim();
+        const value = valueParts.join(":").trim();
+        if (label && value && !label.includes("Country")) { // Skip country identifier
+          metrics[label] = value;
+        }
+      }
+    });
+  }
+  
+  console.log("Extracted metrics:", metrics);
+  return metrics;
 };
-const normalizeReportName = (name: string) => name.replace(/\s+/g, "_");
 
 const ReusableReportTable: React.FC<Props> = ({
   reportName,
-  startDate,
-  endDate,
+  content_us,
+  content_ca,
 }) => {
-  const jsonKey = normalizeReportName(reportName);
-  const report = reportData[jsonKey];
-
-  const start = parseDate(startDate);
-  const end = parseDate(endDate);
+  console.log("ReusableReportTable received:");
+  console.log("content_us:", content_us);
+  console.log("content_ca:", content_ca);
 
   const result: Record<
     string,
-    Record<string, { title: string; value: number; symbol: string; count?: number }>
+    Record<string, { title: string; value: string }>
   > = {};
 
-  Object.entries(report).forEach(([date, data]) => {
-    const current = parseDate(date);
-    if (current >= start && current <= end) {
-      Object.entries(data).forEach(([country, countryData]) => {
-        const metrics = countryData.Metrix;
-        Object.entries(metrics).forEach(([metricKey, metric]) => {
-          const rawValue = metric.value;
-          const symbol = rawValue.replace(/[0-9.,]/g, "").trim() || "";
-          const numericValue = cleanValue(rawValue);
+  const countries: string[] = [];
 
-          if (!result[metricKey]) result[metricKey] = {};
-          if (!result[metricKey][country]) {
-            result[metricKey][country] = {
-              title: metric.title,
-              value: 0,
-              symbol,
-              count: 0,
-            };
-          }
+  if (content_us) {
+    const metrics = extractMetrics(content_us);
+    countries.push("US");
+    Object.entries(metrics).forEach(([metricKey, value]) => {
+      if (!result[metricKey]) result[metricKey] = {};
+      result[metricKey]["US"] = {
+        title: metricKey,
+        value,
+      };
+    });
+  }
 
-          if (symbol === "%") {
-            result[metricKey][country].value += numericValue;
-            result[metricKey][country].count! += 1;
-          } else {
-            result[metricKey][country].value += numericValue;
-          }
-        });
-      });
-    }
-  });
+  if (content_ca) {
+    const metrics = extractMetrics(content_ca);
+    countries.push("CA");
+    Object.entries(metrics).forEach(([metricKey, value]) => {
+      if (!result[metricKey]) result[metricKey] = {};
+      result[metricKey]["CA"] = {
+        title: metricKey,
+        value,
+      };
+    });
+  }
 
-  const countries = Array.from(
-    new Set(Object.values(result).flatMap((metric) => Object.keys(metric)))
-  );
+  console.log("Processed result for table:", result);
+  console.log("Countries found:", countries);
 
-  if (Object.keys(result).length === 0) {
+  // Handle case when no data available at all
+  if (countries.length === 0 || Object.keys(result).length === 0) {
     return (
       <div className="text-center text-gray-500 mb-10 pt-10">
-        No data found for the selected date range
+        No data found for the selected report
       </div>
     );
   }
 
   return (
-    <div className="w-full h-full flex flex-col">
-      <div className="bg-white"><h2 className="text-lg font-semibold mb-4 text-center">{reportName}</h2>
-      <p className="text-black text-gray-500 mb-4 text-center">
-        {startDate} to {endDate}
-      </p></div>
-      
-      <div className="flex-grow flex justify-center">
-     <TableContainer
-          component={Paper}
-         className="overflow-visible border rounded-md"
-        
-            style={{ maxHeight: 800, maxWidth: 1000 }}
-        >
-          <Table size="small" stickyHeader style={{ tableLayout: "fixed" }}>
-            <TableHead>
-              <TableRow>
+    <>
+      <h2 className="text-small font-semibold mb-4 text-center">{reportName}</h2>
+      <TableContainer
+        component={Paper}
+        className="overflow-auto border rounded-md ml-32"
+        style={{ maxHeight: 480, maxWidth: "800px" }}
+      >
+        <Table size="small" stickyHeader style={{ tableLayout: "fixed" }}>
+          <TableHead>
+            <TableRow>
+              <TableCell
+                className="font-extrabold text-sm bg-gray-100 whitespace-nowrap"
+                style={{ width: 200, maxWidth: 200 }}
+              >
+                Performance Matrix
+              </TableCell>
+              {countries.map((country) => (
                 <TableCell
-                  className="font-extrabold text-sm bg-gray-100 whitespace-nowrap"
+                  key={country}
+                  align="right"
+                  className="font-extrabold text-sm bg-gray-100"
+                >
+                  {country}
+                </TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {Object.entries(result).map(([metric, values]) => (
+              <TableRow key={metric}>
+                <TableCell
+                  className="capitalize text-sm whitespace-nowrap overflow-hidden text-ellipsis"
                   style={{ width: 200, maxWidth: 200 }}
                 >
-                   Performance Matrix
+                  {values[countries[0]]?.title || metric}
                 </TableCell>
                 {countries.map((country) => (
-                  <TableCell
-                    key={country}
-                    align="right"
-                    className="font-extrabold text-sm bg-gray-100"
-                  >
-                    {country}
+                  <TableCell key={country} align="right" className="text-sm">
+                    {values[country]?.value ?? "-"}
                   </TableCell>
                 ))}
               </TableRow>
-            </TableHead>
-            <TableBody>
-              {Object.entries(result).map(([metric, values]) => (
-                <TableRow key={metric}>
-                  <TableCell
-                    className="capitalize text-sm whitespace-nowrap overflow-hidden text-ellipsis"
-                    style={{ width: 200, maxWidth: 200 }}
-                  >
-                    {Object.values(values)[0]?.title || metric}
-                  </TableCell>
-                  {countries.map((country) => {
-                    const entry = values[country];
-                    const formatted = (() => {
-                      if (!entry) return "-";
-                      const { value, symbol, count } = entry;
-                      if (symbol === "%") {
-                        const avg = count ? value / count : 0;
-                        return `${avg.toFixed(1)}%`;
-                      } else if (symbol === "") {
-                        return `${value}`;
-                      } else {
-                        return `${symbol}${value.toLocaleString()}`;
-                      }
-                    })();
-                    return (
-                      <TableCell key={country} align="right" className="text-sm">
-                        {formatted}
-                      </TableCell>
-                    );
-                  })}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </div>
-    </div>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </>
   );
 };
-
-
 
 export default ReusableReportTable;
