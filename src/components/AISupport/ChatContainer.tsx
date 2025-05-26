@@ -30,7 +30,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
       setMessages([
         {
           id: uuidv4(),
-          content: "Hello! I'm your AI assistant. How can I help you today?",
+          content: "Hello! I'm your AI Assitant, Nitrous. How can I help you today?",
           role: "assistant",
           timestamp: new Date(),
         },

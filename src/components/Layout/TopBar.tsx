@@ -10,7 +10,7 @@ const TopBar: React.FC = () => {
           alt="Harley Davidson Logo"
           className="h-10 w-auto mr-4"
         />
-        <h1 className="text-xl font-semibold">H-D Ops Portal</h1>
+        <h1 className="text-xl font-semibold">Nitrous AI</h1>
       </div>
       
       <div className="flex items-center space-x-4">
