@@ -131,7 +131,7 @@ const ReusableReportTable: React.FC<Props> = ({
       <h2 className="text-small font-semibold mb-4 text-center">{reportName}</h2>
       <TableContainer
         component={Paper}
-        className="overflow-auto border rounded-md ml-48"
+        className="overflow-auto border rounded-md ml-32"
         style={{ maxHeight: 480, maxWidth: "800px" }}
       >
         <Table size="small" stickyHeader style={{ tableLayout: "fixed" }}>
