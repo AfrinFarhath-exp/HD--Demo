@@ -3,18 +3,27 @@ import ReportCard from "../../components/Report/ReportCard";
 import reports from "../../data/report";
 import ReturnPopup from "../../components/Report/ReportPopup";
 import ReusableReportTable from "../../components/Report/ReusableReportTable";
-import SendIcon from '@mui/icons-material/send';
+import SendIcon from "@mui/icons-material/send";
 import ReportSearch from "../../components/Report/ReportSearch";
 
-
+type ReportParamsType = {
+  title: string;
+  startDate: string;
+  reportName: string;
+  content_us: string;
+  content_ca: string;
+};
 
 export default function ReportsPage() {
   const [showModal, setShowModal] = useState(false);
   const [selectedReport, setSelectedReport] = useState("");
   const [inputQuery, setInputQuery] = useState("");
-  const [activeQuery, setActiveQuery] = useState(null);
-  const [reportParams, setReportParams] = useState(null);
+  const [activeQuery, setActiveQuery] = useState<string | null>(null);
+  const [reportParams, setReportParams] = useState<ReportParamsType | null>(
+    null
+  );
   const [showReportView, setShowReportView] = useState(false);
+  const [showresult, setShowResult] = useState("");
 
   const firstRow = reports.slice(0, 5);
   const secondRow = reports.slice(5);
@@ -27,16 +36,16 @@ export default function ReportsPage() {
     setShowReportView(false);
   };
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = (e: { key: string }) => {
     if (e.key === "Enter") handleSearch();
   };
 
-  const handleCardClick = (title) => {
+  const handleCardClick = (title: React.SetStateAction<string>) => {
     setSelectedReport(title);
     setShowModal(true);
   };
 
-  const handleViewReport = (data) => {
+  const handleViewReport = (data: ReportParamsType) => {
     console.log("Report Data Submitted:", data);
     setReportParams(data);
     setShowModal(false);
@@ -73,23 +82,24 @@ export default function ReportsPage() {
   // Report view (new page with heading and table)
   if (showReportView && reportParams) {
     // Format dates for display
-    const formatDate = (dateString) => {
+    const formatDate = (dateString: string | number | Date) => {
       if (!dateString) return "Not specified";
-      
+
       try {
         const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', { 
-          year: 'numeric', 
-          month: 'long', 
-          day: 'numeric' 
+        return date.toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
         });
       } catch (e) {
         return dateString; // Fallback to the original string if parsing fails
       }
     };
-    
-    const formattedStartDate = formatDate(reportParams.startDate);
-    const formattedEndDate = formatDate(reportParams.endDate);
+
+    const formattedStartDate = reportParams?.startDate
+      ? new Date(reportParams.startDate).toLocaleDateString()
+      : "";
 
     return (
       <div className="flex flex-col px-8 py-6">
@@ -101,24 +111,21 @@ export default function ReportsPage() {
             ← Back to Reports
           </button>
         </div>
-        
+
         <div className="w-full max-w-7xl mx-auto">
           <h1 className="text-2xl font-bold mb-2">{reportParams.title}</h1>
-          <p className="text-gray-600 mb-6">
-            Date Range: {formattedStartDate} to {formattedEndDate}
-          </p>
-          
-          {/* Edited container for fixed width & centered */}
-         <div className="bg-white rounded-lg shadow-md p-6">
-          <div style={{ width: "100%", minWidth: 800, overflowX: "auto" }}>
-            <ReusableReportTable
-              reportName={reportParams.title}
-              startDate={reportParams.startDate}
-              endDate={reportParams.endDate}
-            />
-          </div>
-        </div>
+          <p className="text-gray-600 mb-6">Date Range: {formattedStartDate}</p>
 
+          {/* Edited container for fixed width & centered */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <div style={{ width: "100%", minWidth: 800, overflowX: "auto" }}>
+              <ReusableReportTable
+                reportName={reportParams.title}
+                content_ca={reportParams.content_ca}
+                content_us={reportParams.content_us}
+              />
+            </div>
+          </div>
         </div>
       </div>
     );

@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Select from "react-select";
 import { theme } from "../../theme";
-import ReportSearch from "../../components/Report/ReportSearch";
-import ReusableReportTable from "./ReusableReportTable";
 
 const countries = [
   { value: "US", label: "United States" },
@@ -10,16 +8,22 @@ const countries = [
 ];
 
 const ReturnPopup = ({
-  // title = "Returns Report",
+  title = "Returns Report",
   handleClose,
   onViewReport,
 }: {
   title?: string;
   handleClose: () => void;
-  onViewReport: (data: {  startDate: string }) => void;
+  onViewReport: (data: {
+    title: string;
+    startDate: string;
+    reportName: string;
+    content_us: string;
+    content_ca: string;
+  }) => void;
 }) => {
-const [contentUs, setContentUs] = useState("");
-const [contentCa, setContentCa] =useState("");
+  const [contentUs, setContentUs] = useState("");
+  const [contentCa, setContentCa] = useState("");
 
   const [startDate, setStartDate] = useState("");
   const [visible, setVisible] = useState(false);
@@ -33,84 +37,114 @@ const [contentCa, setContentCa] =useState("");
     setVisible(true);
   }, []);
 
-  
-const API_KEY = "8EhgReELYz1ubhefjbu3ypHQu3izCzx05so65jpkUjLvKUi3oEj8JQQJ99BEACYeBjFXJ3w3AAABACOGQKn6"; 
-const API_ENDPOINT= "https://hd-dddrdnc2amfvdrcw.eastasia-01.azurewebsites.net/Metrics_search";
-const handleViewReport = async () => {
-  try {
-    if (!selectedCountries.length) {
-      alert("Please select at least one country.");
-      return;
+  const API_KEY =
+    "8EhgReELYz1ubhefjbu3ypHQu3izCzx05so65jpkUjLvKUi3oEj8JQQJ99BEACYeBjFXJ3w3AAABACOGQKn6";
+  const API_ENDPOINT =
+    "https://hdsupportapi-hff8cqb9a8g2brar.canadacentral-01.azurewebsites.net/Metrics_search";
+
+  const validateInputs = () => {
+    if (!selectedCountries.length || !startDate) {
+      alert("Please select a date and at least one country.");
+      return false;
+    }
+    return true;
+  };
+
+  const fetchReportData = async (query: string, topK: number) => {
+    const requestBody = {
+      query,
+      top_k: topK,
+    };
+
+    const res = await fetch(API_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "api-key": API_KEY,
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!res.ok) {
+      throw new Error(`API failed: ${res.statusText}`);
     }
 
-    const responses = await Promise.all(
-      selectedCountries.map(async (country) => {
-        // Format date as dd/mm/yyyy
-        const formattedDate = new Date(startDate).toLocaleDateString("en-GB");
+    return await res.json();
+  };
 
-        // Build query string as requested
-        const query = `${title}on ${formattedDate}`;
+  const filterAndSetReportData = (data: any[]) => {
+    const contentDate = new Date(startDate);
+    const formattedContentDate = `${
+      contentDate.getMonth() + 1
+    }/${contentDate.getDate()}/${contentDate.getFullYear()}`;
 
-        const requestBody = {
-          query,
-          top_k: 2,
-        };
-console.log("requestbody",requestBody)
-        const res = await fetch(API_ENDPOINT, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "api-key": API_KEY,
-          },
-          body: JSON.stringify(requestBody),
-        });
+    const matchedItems = data.filter((item: any) => {
+      const content = item.content || "";
+      const countryMatch = selectedCountries.some((c) =>
+        content.includes(`**Country:** ${c}`)
+      );
+      const dateMatch = content.includes(
+        `**Start Date:** ${formattedContentDate}`
+      );
+      return countryMatch && dateMatch;
+    });
 
-        if (!res.ok) {
-          throw new Error(`Failed to fetch for ${country}: ${res.statusText}`);
-        }
-
-        const data = await res.json();
-        console.log("reporttake", data);
-        
-        return data;
-        
-      })
+    const usItems = matchedItems.filter((item: any) =>
+      item.content.includes("**Country:** US")
+    );
+    const caItems = matchedItems.filter((item: any) =>
+      item.content.includes("**Country:** CA")
     );
 
-   
-        const allData = responses.flat();
-console.log("allData", allData);
+    const content_us = usItems.length
+      ? usItems[usItems.length - 1].content
+      : "";
+    const content_ca = caItems.length
+      ? caItems[caItems.length - 1].content
+      : "";
 
-const caItems = allData.filter(item => item.content?.includes("**Country:** CA"));
-const content_ca = caItems.length ? caItems[caItems.length - 1].content : "";
+    console.log(content_us, content_ca);
 
-
-const usItems = allData.filter(item => item.content?.includes("**Country:** US"));
-const content_us = usItems.length ? usItems[usItems.length - 1].content : "";
-console.log("contentUs",content_us);
-console.log("contentUs",content_ca);
-
-
-    setReportData(allData); // store if needed
+    setContentUs(content_us);
+    setContentCa(content_ca);
     setShowReport(true);
-   setContentUs(content_us ? content_us : "");
-setContentCa(content_ca ?content_ca: "");
 
-   //  console.log("contentUs",contentUs);
-//      console.log("contentCa",contentCa);
+    onViewReport({
+      startDate,
+      title,
+      reportName: "",
+      content_us,
+      content_ca,
+    });
+  };
 
+  const handleViewReport = async () => {
+    try {
+      if (!validateInputs()) return;
 
+      const formattedDate = new Date(startDate).toLocaleDateString("en-GB");
+      const formattedCountries = selectedCountries
+        .join(", ")
+        .replace(/, ([^,]*)$/, " and $1");
+      const query = `${title} for ${formattedCountries} on ${formattedDate}`;
 
-    setShowReport(true);
-    onViewReport({ startDate });
-  } catch (err) {
-    console.error("API Error:", err);
-    alert("Failed to load report. Please try again.");
-  }
-};
+      const data = await fetchReportData(
+        query,
+        selectedCountries.length * 2 || 4
+      );
+      filterAndSetReportData(data);
 
-//  console.log("contentUs",contentUs);
-//      console.log("contentCa",contentCa);
+    } catch (err) {
+      console.error("API Error:", err);
+      alert("Failed to load report. Please try again.");
+    }
+  };
+
+  useEffect(() => {
+    console.log("State updated - contentUs:", contentUs);
+    console.log("State updated - contentCa:", contentCa);
+  }, [contentUs, contentCa]);
+
   return (
     <>
       <style>
@@ -291,27 +325,9 @@ setContentCa(content_ca ?content_ca: "");
             View Report
           </button>
         </div>
-
-        {showReport && (
-          <ReportSearch
-            startDate={startDate}
-            reportData={reportData} // Pass combined data here
-          />
-        )}
-       {showReport && (
- <ReusableReportTable
-  reportName="Performance Summary"
-  content_us={contentUs}
-  content_ca={contentCa}
-/>
-
-)}
-
-
       </div>
     </>
   );
 };
 
 export default ReturnPopup;
-
