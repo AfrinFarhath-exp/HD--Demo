@@ -31,7 +31,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
         {
           id: uuidv4(),
           content: "Hello! I'm your AI Assitant, Nitrous. How can I help you today?",
-          role: "assistant",
+          role: "Nitrous AI",
           timestamp: new Date(),
         },
       ]);
@@ -78,7 +78,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     const loadingMessage: Message = {
       id: uuidv4(),
       content: "",
-      role: "assistant",
+      role: "Nitrous AI",
       timestamp: new Date(),
       isLoading: true,
     };
@@ -86,7 +86,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     setMessages((prev) => [...prev, loadingMessage]);
 
     try {
-      const sessionId = "static-session";
+      const sessionId = uuidv4();
       const finalOutput = await queryAgent(content, sessionId);
 
       setMessages((prev) => prev.filter((msg) => !msg.isLoading));
@@ -94,7 +94,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
       const responseMessage: Message = {
         id: uuidv4(),
         content: finalOutput,
-        role: "assistant",
+        role: "Nitrous AI",
         timestamp: new Date(),
       };
 
@@ -106,7 +106,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
       const errorMessage: Message = {
         id: uuidv4(),
         content: "An error occurred. Please try again.",
-        role: "assistant",
+        role: "Nitrous AI",
         timestamp: new Date(),
       };
 
@@ -127,7 +127,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     const loadingMessage: Message = {
       id: uuidv4(),
       content: "",
-      role: "assistant",
+      role: "Nitrous AI",
       timestamp: new Date(),
       isLoading: true,
     };
@@ -141,7 +141,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
         id: uuidv4(),
         content:
           "What specific Idoc issue are you referring to? Here are some common issues:",
-        role: "assistant",
+        role: "Nitrous AI",
         timestamp: new Date(),
       };
 
@@ -162,7 +162,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     const loadingMessage: Message = {
       id: uuidv4(),
       content: "",
-      role: "assistant",
+      role: "Nitrous AI",
       timestamp: new Date(),
       isLoading: true,
     };
@@ -175,7 +175,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
       const responseMessage: Message = {
         id: uuidv4(),
         content: `I'll help you find information about "${query}". Please provide more details or select an issue.`,
-        role: "assistant",
+        role: "Nitrous AI",
         timestamp: new Date(),
       };
 
@@ -198,7 +198,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
     const loadingMessage: Message = {
       id: uuidv4(),
       content: "",
-      role: "assistant",
+      role: "Nitrous AI",
       timestamp: new Date(),
       isLoading: true,
     };
@@ -211,7 +211,7 @@ const ChatContainer: React.FC<ChatContainerProps> = ({
       const solutionMessage: Message = {
         id: uuidv4(),
         content: `${issue.solution}\n\nIs there anything else I can help you with?`,
-        role: "assistant",
+        role: "Nitrous AI",
         timestamp: new Date(),
       };
 
