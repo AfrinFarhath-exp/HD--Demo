@@ -20,7 +20,7 @@ interface AzureSearchResult {
 
 export const azureSearchService = {
   apiEndpoint:
-    "https://hd-dddrdnc2amfvdrcw.eastasia-01.azurewebsites.net/ai_agent_query",
+    "https://hdsupportapi-hff8cqb9a8g2brar.canadacentral-01.azurewebsites.net/ai_agent_query",
 
   async searchReports(
     query: string,
