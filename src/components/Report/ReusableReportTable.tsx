@@ -1,5 +1,3 @@
-
-
 // import React from "react";
 // import {
 //   Table,
@@ -176,21 +174,59 @@ interface Props {
 }
 
 
+// Function to extract performance metrics from the markdown string
 const extractMetrics = (content: string): Record<string, string> => {
-  const lines = content.split("\n").map(line => line.trim());
+  console.log("Extracting metrics from:", content);
+  
+  if (!content || typeof content !== 'string') {
+    console.warn("Invalid content provided to extractMetrics:", content);
+    return {};
+  }
+  
   const metrics: Record<string, string> = {};
-
-  lines.forEach(line => {
-    if (line.startsWith("-")) {
-      const [labelPart, ...valueParts] = line.substring(1).split(":");
-      const label = labelPart.trim();
-      const value = valueParts.join(":").trim();
+  
+  // Try different formats - first look for markdown-style bullet points
+  const bulletPointRegex = /[-*]\s+([^:]+):\s+(.*)/g;
+  let match;
+  
+  while ((match = bulletPointRegex.exec(content)) !== null) {
+    const label = match[1].trim();
+    const value = match[2].trim();
+    if (label && value) {
+      metrics[label] = value;
+    }
+  }
+  
+  // If we didn't find any metrics with bullet points, try key-value pairs
+  if (Object.keys(metrics).length === 0) {
+    const keyValueRegex = /\*\*([^:*]+):\*\*\s+(.*)/g;
+    
+    while ((match = keyValueRegex.exec(content)) !== null) {
+      const label = match[1].trim();
+      const value = match[2].trim();
       if (label && value) {
         metrics[label] = value;
       }
     }
-  });
-
+  }
+  
+  // Fallback to simple line parsing if still no metrics
+  if (Object.keys(metrics).length === 0) {
+    const lines = content.split("\n").map(line => line.trim());
+    
+    lines.forEach(line => {
+      if (line.includes(":")) {
+        const [labelPart, ...valueParts] = line.split(":");
+        const label = labelPart.trim();
+        const value = valueParts.join(":").trim();
+        if (label && value && !label.includes("Country")) { // Skip country identifier
+          metrics[label] = value;
+        }
+      }
+    });
+  }
+  
+  console.log("Extracted metrics:", metrics);
   return metrics;
 };
 
@@ -199,14 +235,17 @@ const ReusableReportTable: React.FC<Props> = ({
   content_us,
   content_ca,
 }) => {
+  console.log("ReusableReportTable received:");
+  console.log("content_us:", content_us);
+  console.log("content_ca:", content_ca);
+
   const result: Record<
     string,
     Record<string, { title: string; value: string }>
   > = {};
 
   const countries: string[] = [];
-console.log("content_us",content_us);
-console.log("content_us",content_ca);
+
   if (content_us) {
     const metrics = extractMetrics(content_us);
     countries.push("US");
@@ -221,18 +260,21 @@ console.log("content_us",content_ca);
 
   if (content_ca) {
     const metrics = extractMetrics(content_ca);
-    countries.push("UK");
+    countries.push("CA");
     Object.entries(metrics).forEach(([metricKey, value]) => {
       if (!result[metricKey]) result[metricKey] = {};
-      result[metricKey]["UK"] = {
+      result[metricKey]["CA"] = {
         title: metricKey,
         value,
       };
     });
   }
 
+  console.log("Processed result for table:", result);
+  console.log("Countries found:", countries);
+
   // Handle case when no data available at all
-  if (countries.length === 0) {
+  if (countries.length === 0 || Object.keys(result).length === 0) {
     return (
       <div className="text-center text-gray-500 mb-10 pt-10">
         No data found for the selected report

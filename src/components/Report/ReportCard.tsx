@@ -1,25 +1,40 @@
 import { FileText } from "lucide-react";
+import { Card, Typography } from "@mui/material";
 
 type ReportCardProps = {
   title: string;
-  onClick?: () => void; 
+  onClick?: () => void;
 };
 
 export default function ReportCard({ title, onClick }: ReportCardProps) {
-  
-  const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (onClick) onClick();
-  };
-
   return (
-    <a
-      href="#"
-      onClick={handleClick}
-      className="flex items-center gap-2 bg-white hover:shadow-lg transition-shadow p-3 rounded-md shadow-sm w-fit cursor-pointer"
+    <Card
+      onClick={onClick}
+      sx={{
+        px: 1.5,
+        py: 1,
+        borderRadius: 2,
+        backgroundColor: "#f5f5f5",
+        cursor: "pointer",
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 1,
+        border: "1px solid #ddd",
+        boxShadow: "none", // Removes default box shadow
+        "&:hover": {
+          borderColor: "#EA580C",
+        },
+      }}
     >
-      <FileText className="text-orange-600 w-5 h-5" />
-      <h3 className="text-black font-semibold text-sm">{title}</h3>
-    </a>
+      <FileText style={{ color: "#EA580C", width: 20, height: 20 }} />
+      <Typography
+        variant="body2"
+        fontWeight={400}
+        color="text.primary"
+        sx={{ fontSize: "0.825rem", whiteSpace: "nowrap" }}
+      >
+        {title}
+      </Typography>
+    </Card>
   );
 }
