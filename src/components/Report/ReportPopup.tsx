@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Select from "react-select";
 import { theme } from "../../theme";
-import ReportSearch from "../../components/Report/ReportSearch";
 
 const countries = [
   { value: "US", label: "United States" },
@@ -15,25 +14,136 @@ const ReturnPopup = ({
 }: {
   title?: string;
   handleClose: () => void;
-  onViewReport: (data: { title: string; startDate: string }) => void;
+  onViewReport: (data: {
+    title: string;
+    startDate: string;
+    reportName: string;
+    content_us: string;
+    content_ca: string;
+  }) => void;
 }) => {
+  const [contentUs, setContentUs] = useState("");
+  const [contentCa, setContentCa] = useState("");
+
   const [startDate, setStartDate] = useState("");
   const [visible, setVisible] = useState(false);
   const [showReport, setShowReport] = useState(false);
   const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
+  const [reportData, setReportData] = useState<
+    { country: string; data: any }[]
+  >([]);
 
   useEffect(() => {
     setVisible(true);
   }, []);
 
-  const handleViewReport = () => {
-    onViewReport({
-      title: title ?? "",
-      startDate,
-    });
-    setShowReport(true);
-    console.log("selectedCountries", selectedCountries);
+  const API_KEY =
+    "8EhgReELYz1ubhefjbu3ypHQu3izCzx05so65jpkUjLvKUi3oEj8JQQJ99BEACYeBjFXJ3w3AAABACOGQKn6";
+  const API_ENDPOINT =
+    "https://hdsupportapi-hff8cqb9a8g2brar.canadacentral-01.azurewebsites.net/Metrics_search";
+
+  const validateInputs = () => {
+    if (!selectedCountries.length || !startDate) {
+      alert("Please select a date and at least one country.");
+      return false;
+    }
+    return true;
   };
+
+  const fetchReportData = async (query: string, topK: number) => {
+    const requestBody = {
+      query,
+      top_k: topK,
+    };
+
+    const res = await fetch(API_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "api-key": API_KEY,
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!res.ok) {
+      throw new Error(`API failed: ${res.statusText}`);
+    }
+
+    return await res.json();
+  };
+
+  const filterAndSetReportData = (data: any[]) => {
+    const contentDate = new Date(startDate);
+    const formattedContentDate = `${
+      contentDate.getMonth() + 1
+    }/${contentDate.getDate()}/${contentDate.getFullYear()}`;
+
+    const matchedItems = data.filter((item: any) => {
+      const content = item.content || "";
+      const countryMatch = selectedCountries.some((c) =>
+        content.includes(`**Country:** ${c}`)
+      );
+      const dateMatch = content.includes(
+        `**Start Date:** ${formattedContentDate}`
+      );
+      return countryMatch && dateMatch;
+    });
+
+    const usItems = matchedItems.filter((item: any) =>
+      item.content.includes("**Country:** US")
+    );
+    const caItems = matchedItems.filter((item: any) =>
+      item.content.includes("**Country:** CA")
+    );
+
+    const content_us = usItems.length
+      ? usItems[usItems.length - 1].content
+      : "";
+    const content_ca = caItems.length
+      ? caItems[caItems.length - 1].content
+      : "";
+
+    console.log(content_us, content_ca);
+
+    setContentUs(content_us);
+    setContentCa(content_ca);
+    setShowReport(true);
+
+    onViewReport({
+      startDate,
+      title,
+      reportName: "",
+      content_us,
+      content_ca,
+    });
+  };
+
+  const handleViewReport = async () => {
+    try {
+      if (!validateInputs()) return;
+
+      const formattedDate = new Date(startDate).toLocaleDateString("en-GB");
+      const formattedCountries = selectedCountries
+        .join(", ")
+        .replace(/, ([^,]*)$/, " and $1");
+      const query = `${title} for ${formattedCountries} on ${formattedDate}`;
+
+      const data = await fetchReportData(
+        query,
+        selectedCountries.length * 2 || 4
+      );
+      filterAndSetReportData(data);
+
+    } catch (err) {
+      console.error("API Error:", err);
+      alert("Failed to load report. Please try again.");
+    }
+  };
+
+  useEffect(() => {
+    console.log("State updated - contentUs:", contentUs);
+    console.log("State updated - contentCa:", contentCa);
+  }, [contentUs, contentCa]);
 
   return (
     <>
@@ -203,7 +313,7 @@ const ReturnPopup = ({
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
-              minWidth: "160px", // Ensures consistent width
+              minWidth: "160px",
             }}
             onMouseOver={(e) =>
               (e.currentTarget.style.backgroundColor = theme.colors.hover)
@@ -215,14 +325,6 @@ const ReturnPopup = ({
             View Report
           </button>
         </div>
-
-        {showReport && (
-          <ReportSearch
-            title={title}
-            startDate={startDate}
-            selectedCountries={selectedCountries}
-          />
-        )}
       </div>
     </>
   );
