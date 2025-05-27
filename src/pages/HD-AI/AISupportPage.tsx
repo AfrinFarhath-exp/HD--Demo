@@ -35,8 +35,8 @@ const AISupportPage: React.FC = () => {
     <div className="h-full flex flex-col">
       <div className="flex-1 flex flex-col items-center justify-center p-6">
         <div className={`w-full max-w-3xl mx-auto transition-all duration-300 ${showChat ? 'scale-95 opacity-0 hidden' : 'scale-100 opacity-100'}`}>
-          <h1 className="text-4xl font-bold text-center mb-3">AI Support</h1>
-          <p className="text-gray-600 text-center mb-8">Get instant answers to your technical questions</p>
+          <h1 className="text-4xl font-bold text-center mb-3">What can I help with?</h1>
+          <p className="text-gray-600 text-center mb-8">Get instant answers to your technical questions!</p>
           <SearchBar 
             onSearch={handleSearch} 
             suggestedQuestions={suggestedQuestions}

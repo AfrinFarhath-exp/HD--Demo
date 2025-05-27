@@ -26,11 +26,6 @@ const SideNav: React.FC = () => {
   </span>
 </div>
 
-
-
-
-
-
       </div>
       
       <nav className="flex-1 mt-6">
@@ -77,7 +72,7 @@ const SideNav: React.FC = () => {
             <div>
               <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-700 ease-in-out">
                 <div className="text-sm font-medium">User Name</div>
-                <div className="text-xs text-gray-400">user@company.com</div>
+                <div className="text-xs text-gray-400">user@harley-davidson.com</div>
               </div>
             </div>
           </div>
