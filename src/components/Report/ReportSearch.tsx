@@ -2,8 +2,8 @@ import React, { useEffect, useState, useRef } from "react";
 import { Send, Maximize2, X } from "lucide-react";
 import { azureSearchService } from "./azureSearchService";
 import { theme } from "../../theme";
+import { v4 as uuidv4 } from "uuid";
 
-// Type Definitions
 interface Message {
   text: string;
   isUser: boolean;
@@ -21,25 +21,9 @@ interface ChatBubbleProps {
 
 interface ReportSearchProps {
   query?: string;
-  session_id: string; // Required prop
-}
-
-
-interface ModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  data: AzureSearchResult | null;
-}
-
-interface AzureSearchResult {
-  id?: string;
-  fileName?: string;
-  startDate: string;
-  endDate: string;
-  country: string;
-  content?: string;
-  searchScore?: number;
-  metrics?: Array<{ name: string; value: string }>;
+  messages?: Message[];
+  setMessages?: React.Dispatch<React.SetStateAction<Message[]>>;
+  hasInitialized?: boolean;
 }
 
 interface BotMessageModalProps {
@@ -56,7 +40,7 @@ const ThinkingIndicator: React.FC<ThinkingIndicatorProps> = ({
   return (
     <div className="flex items-center justify-start p-3 mb-4">
       <div className="flex-shrink-0 mr-3">
-        <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white shadow-md">
+        <div className="w-8 h-8 ml-12 rounded-full bg-primary flex items-center justify-center text-white shadow-md">
           <svg
             className="w-5 h-5"
             fill="none"
@@ -94,63 +78,6 @@ const ThinkingIndicator: React.FC<ThinkingIndicatorProps> = ({
   );
 };
 
-// Modal Component for displaying large content
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, data }) => {
-  const modalRef = useRef<HTMLDivElement>(null);
-
-  if (!isOpen || !data) return null;
-
-  const hasContent = (): boolean => {
-    return !!data.content && data.content.length > 0;
-  };
-
-
-  const handleOutsideClick = (e: React.MouseEvent) => {
-    if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
-      onClose();
-    }
-  };
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-      onClick={handleOutsideClick}
-    >
-      <div
-        ref={modalRef}
-        className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[80vh] flex flex-col"
-      >
-        {/* Modal Header */}
-        <div className="flex justify-between items-center p-4 border-b">
-          <h3 style={{ fontFamily: `${theme.typography.fontFamily}` }}>
-            {data.fileName || "Report Details"}
-          </h3>
-          <button
-            onClick={onClose}
-            className="p-1 rounded-full hover:bg-gray-200 focus:outline-none"
-          >
-            <X size={20} />
-          </button>
-        </div>
-
-        {/* Modal Body */}
-        <div className="p-4 overflow-y-auto flex-1">
-          {hasContent() ? (
-            <div className="bg-white border rounded-lg p-4 whitespace-pre-wrap"
-             style={{ fontFamily: `${theme.typography.fontFamily}` }}>
-              {data.content}
-            </div>
-          ) : (
-            <div className="bg-gray-50 border rounded-lg p-4 text-gray-500 text-center">
-              No detailed content available for this report.
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
-
 const ResponseModal: React.FC<BotMessageModalProps> = ({
   isOpen,
   onClose,
@@ -160,7 +87,6 @@ const ResponseModal: React.FC<BotMessageModalProps> = ({
 
   if (!isOpen || !message) return null;
 
-  // Handle clicking outside the modal content to close it
   const handleOutsideClick = (e: React.MouseEvent) => {
     if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
       onClose();
@@ -176,7 +102,6 @@ const ResponseModal: React.FC<BotMessageModalProps> = ({
         ref={modalRef}
         className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[80vh] flex flex-col"
       >
-        {/* Modal Header */}
         <div className="flex justify-between items-center p-4 border-b">
           <div className="flex items-center">
             <div className="w-8 h-8 mr-2 rounded-full bg-primary flex items-center justify-center text-white">
@@ -192,32 +117,25 @@ const ResponseModal: React.FC<BotMessageModalProps> = ({
           </button>
         </div>
 
-        {/* Modal Body */}
         <div className="p-4 overflow-y-auto flex-1">
-          {/* Message Content */}
-          <div className="bg-white border rounded-lg p-4 whitespace-pre-wrap text-gray-800">
+          <div
+            className="bg-white border rounded-lg p-4 whitespace-pre-wrap text-gray-800"
+            style={{ fontFamily: `${theme.typography.fontFamily}` }}
+          >
             {message.text}
           </div>
-
         </div>
-        
       </div>
     </div>
   );
 };
-
 
 const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
   const formatTime = (date: Date): string => {
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
-  const [modalOpen, setModalOpen] = useState(false);
-  const [selectedData, setSelectedData] = useState<AzureSearchResult | null>(
-    null
-  );
   const [botMessageModalOpen, setBotMessageModalOpen] = useState(false);
-
 
   const openBotMessageModal = () => {
     if (!message.isUser) {
@@ -225,94 +143,88 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
     }
   };
 
-   return (
-  <div
-  className={`flex items-start mb-4 ${
-    message.isUser ? "justify-end" : "justify-start"
-  }`}
->
-  {!message.isUser && (
-    <div className="flex-shrink-0 mr-3">
-      <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-white shadow-md">
-        <p className="text-xs">AI</p>
-      </div>
-    </div>
-  )}
-
-  <div className="relative max-w-xs md:max-w-md lg:max-w-xl">
-    <span 
-      className={`text-xs gap-2 flex text-gray-500 mb-1 ${
+  return (
+    <div
+      className={`flex items-start mb-4 ${
         message.isUser ? "justify-end" : "justify-start"
       }`}
     >
-      {!message.isUser && <p>Nitrous AI</p>}
-      {formatTime(message.timestamp)}
-    </span>
-    
-    <div
-      className={`px-4 py-3 rounded-xl ${
-        message.isUser
-          ? "bg-primary text-white rounded-br-none shadow-md"
-          : "bg-gray-100 text-gray-800 rounded-bl-none shadow-sm hover:bg-gray-200 cursor-pointer"
-      }`}
-      onClick={!message.isUser ? openBotMessageModal : undefined}
-    >
-      <div className="flex justify-between items-start">
-        <p className="text-sm whitespace-pre-wrap">{message.text}</p>
-        {!message.isUser && message.text.length > 200 && (
-          <Maximize2
-            size={16}
-            className="ml-2 text-gray-500 flex-shrink-0"
-            onClick={(e) => {
-              e.stopPropagation();
-              openBotMessageModal();
-            }}
-          />
-        )}
+      {!message.isUser && (
+        <div className="flex-shrink-0 mr-3 ml-12">
+          <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-white shadow-md">
+            <p className="text-xs">AI</p>
+          </div>
+        </div>
+      )}
+
+      <div className="relative max-w-xs md:max-w-md lg:max-w-xl mr-40">
+        <span
+          className={`text-xs gap-2 flex text-gray-500 mb-1
+          `}
+        >
+          {!message.isUser && <p> Nitrous AI • </p>}
+          <span className="flex ">
+            {message.isUser && <p> You •  </p>}
+            {formatTime(message.timestamp)}
+          </span>
+        </span>
+
+        <div
+          className={`px-4 py-3 rounded-xl ${
+            message.isUser
+              ? "bg-primary text-white rounded-br-none shadow-md "
+              : "bg-gray-100 text-gray-800 rounded-bl-none shadow-sm hover:bg-gray-200 cursor-pointer"
+          }`}
+          onClick={!message.isUser ? openBotMessageModal : undefined}
+        >
+          <div className="flex justify-between items-start">
+            <p className="text-sm whitespace-pre-wrap">{message.text}</p>
+            {!message.isUser && message.text.length > 200 && (
+              <Maximize2
+                size={16}
+                className="ml-2 text-gray-500 flex-shrink-0"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openBotMessageModal();
+                }}
+              />
+            )}
+          </div>
+        </div>
       </div>
+
+      <ResponseModal
+        isOpen={botMessageModalOpen}
+        onClose={() => setBotMessageModalOpen(false)}
+        message={message}
+      />
     </div>
-  </div>
-
-  {message.isUser && (
-    <div className="flex-shrink-0 ml-3">
-      <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-white shadow-md">
-        <p className="text-xs">U</p>
-      </div>
-    </div>
-  )}
-
-  {/* Modal for displaying full report */}
-  <Modal
-    isOpen={modalOpen}
-    onClose={() => setModalOpen(false)}
-    data={selectedData}
-  />
-
-  {/* Modal for displaying bot message */}
-  <ResponseModal
-    isOpen={botMessageModalOpen}
-    onClose={() => setBotMessageModalOpen(false)}
-    message={message}
-  />
-</div>
-);
+  );
 };
 
-
 // Main Chat Component
-const ReportSearch: React.FC<ReportSearchProps> = ({ query, session_id }) => {
+const ReportSearch: React.FC<ReportSearchProps> = ({
+  query,
+  messages: externalMessages = [],
+  setMessages: setExternalMessages,
+  hasInitialized = false,
+}) => {
   const [loading, setLoading] = useState<boolean>(false);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [internalMessages, setInternalMessages] = useState<Message[]>([]);
+  const messages = setExternalMessages ? externalMessages : internalMessages;
+  const setMessages = setExternalMessages || setInternalMessages;
+
   const [inputMessage, setInputMessage] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const chatContainerRef = useRef<HTMLDivElement | null>(null);
-  const hasHandledInitialQuery = useRef<boolean>(false);
+  const processedQueries = useRef<Set<string>>(new Set());
 
   const searchAzureAndGenerateResponse = async (
     queryText: string
   ): Promise<Message> => {
     try {
+      const session_id = uuidv4();
       const searchResponse = await azureSearchService.searchReports(
         queryText,
         session_id
@@ -369,7 +281,8 @@ const ReportSearch: React.FC<ReportSearchProps> = ({ query, session_id }) => {
         timestamp: new Date(),
         showDisplay: true,
       };
-    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
       console.error("Error processing search:", error);
       setError(error.message || "An unknown error occurred");
       return {
@@ -383,16 +296,16 @@ const ReportSearch: React.FC<ReportSearchProps> = ({ query, session_id }) => {
   useEffect(() => {
     setError(null);
 
-    if (query && !hasHandledInitialQuery.current) {
-      hasHandledInitialQuery.current = true;
+    if (query && !processedQueries.current.has(query)) {
+      processedQueries.current.add(query);
 
       const userMessage: Message = {
         text: query,
         isUser: true,
         timestamp: new Date(),
       };
-      setMessages([userMessage]);
 
+      setMessages((prev) => [...prev, userMessage]);
       setLoading(true);
 
       searchAzureAndGenerateResponse(query)
@@ -413,7 +326,7 @@ const ReportSearch: React.FC<ReportSearchProps> = ({ query, session_id }) => {
         .finally(() => {
           setLoading(false);
         });
-    } else if (!query && messages.length === 0) {
+    } else if (!query && messages.length === 0 && !hasInitialized) {
       setMessages([
         {
           text: "Hello! How can I help you today? You can search for reports by name or description.",
@@ -422,7 +335,7 @@ const ReportSearch: React.FC<ReportSearchProps> = ({ query, session_id }) => {
         },
       ]);
     }
-  }, [query, session_id]);
+  }, [query, messages.length, hasInitialized, setMessages]);
 
   useEffect(() => {
     const scrollTimeout = setTimeout(() => {
@@ -451,7 +364,8 @@ const ReportSearch: React.FC<ReportSearchProps> = ({ query, session_id }) => {
     try {
       const botResponse = await searchAzureAndGenerateResponse(inputMessage);
       setMessages((prev) => [...prev, botResponse]);
-    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
       console.error("Error handling message:", error);
       setMessages((prev) => [
         ...prev,
@@ -497,19 +411,19 @@ const ReportSearch: React.FC<ReportSearchProps> = ({ query, session_id }) => {
       </div>
 
       {/* Fixed input at bottom */}
-      <div className="fixed bottom-0 w-5/6 px-4 pb-7 shadow-lg">
-        <div className="flex items-center gap-2 max-w-6xl mx-auto ">
+      <div className="fixed bottom-0 bg-gray-50 w-5/6 pb-7 pt-4 ">
+        <div className="flex items-center gap-2  pl-12">
           <input
             type="text"
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Search for reports..."
-            className="flex-1 px-3 py-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gray-200 shadow-sm"
+            className="flex-1 px-3 py-3 border border-gray-300 rounded-2xl max-w-5xl focus:outline-none focus:ring-2 focus:ring-gray-200 w-10"
           />
           <button
             onClick={handleSendMessage}
-            className="p-3 bg-primary text-white rounded-full hover:bg-primary focus:outline-none focus:ring-2 focus:bg-primary shadow-md"
+            className="p-3 bg-primary text-white rounded-full hover:bg-primary focus:outline-none focus:ring-2 focus:bg-primary"
             disabled={loading}
           >
             <Send size={20} />

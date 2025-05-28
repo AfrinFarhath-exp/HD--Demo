@@ -17,16 +17,16 @@ interface AzureSearchResult {
   metrics?: Array<{ name: string; value: string }>;
 }
 
-
 export const azureSearchService = {
   apiEndpoint:
     "https://hdsupportapi-hff8cqb9a8g2brar.canadacentral-01.azurewebsites.net/ai_agent_query",
 
   async searchReports(
     query: string,
-    session_id: string = "12345"
+    session_id: string
   ): Promise<AzureSearchResponse> {
     try {
+      
       const requestBody = {
         query: query,
         session_id: session_id,
@@ -75,6 +75,7 @@ export const azureSearchService = {
     }
   },
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   processSearchResults(data: any): AzureSearchResult[] {
     if (!data) {
       console.error("No data received from API");
@@ -118,7 +119,7 @@ export const azureSearchService = {
       return [];
     }
 
-    // Process and return the items
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return items.map((item: any) => ({
       id: item.id || `result-${Math.random().toString(36).substr(2, 9)}`,
       fileName: item.fileName || item.file_name || "Untitled Report",

@@ -6,6 +6,14 @@ import ReusableReportTable from "../../components/Report/ReusableReportTable";
 import SendIcon from "@mui/icons-material/send";
 import ReportSearch from "../../components/Report/ReportSearch";
 
+// Add Message interface here to match ReportSearch
+interface Message {
+  text: string;
+  isUser: boolean;
+  timestamp: Date;
+  showDisplay?: boolean;
+}
+
 type ReportParamsType = {
   title: string;
   startDate: string;
@@ -23,10 +31,9 @@ export default function ReportsPage() {
     null
   );
   const [showReportView, setShowReportView] = useState(false);
-  const [showresult, setShowResult] = useState("");
+  const [chatMessages, setChatMessages] = useState<Message[]>([]);
+  const [hasInitialized, setHasInitialized] = useState(false);
 
-  const firstRow = reports.slice(0, 5);
-  const secondRow = reports.slice(5);
 
   const handleSearch = () => {
     const q = inputQuery.trim();
@@ -34,6 +41,11 @@ export default function ReportsPage() {
     setActiveQuery(q);
     setInputQuery("");
     setShowReportView(false);
+    
+    // Initialize chat if this is the first search
+    if (!hasInitialized) {
+      setHasInitialized(true);
+    }
   };
 
   const handleKeyDown = (e: { key: string }) => {
@@ -53,18 +65,18 @@ export default function ReportsPage() {
     setActiveQuery(null);
   };
 
-  // Return to main view
   const handleBackButton = () => {
     setActiveQuery(null);
     setShowReportView(false);
     setReportParams(null);
   };
 
-  // Conversational search view
+
+
   if (activeQuery !== null) {
     return (
-      <div className="flex flex-col">
-        <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col mb-10">
+        <div className="flex items-center justify-between ml-6">
           <button
             onClick={handleBackButton}
             className="text-primary fixed hover:text-primary/80 font-medium flex items-center z-50"
@@ -72,8 +84,13 @@ export default function ReportsPage() {
             ← Back to Search
           </button>
         </div>
-        <div className="flex-1 overflow-hidden">
-          <ReportSearch query={activeQuery} />
+        <div className="flex-1 overflow-hidden mr-10 mb-10">
+          <ReportSearch 
+            query={activeQuery}
+            messages={chatMessages}
+            setMessages={setChatMessages}
+            hasInitialized={hasInitialized}
+          />
         </div>
       </div>
     );
@@ -81,21 +98,6 @@ export default function ReportsPage() {
 
   // Report view (new page with heading and table)
   if (showReportView && reportParams) {
-    // Format dates for display
-    const formatDate = (dateString: string | number | Date) => {
-      if (!dateString) return "Not specified";
-
-      try {
-        const date = new Date(dateString);
-        return date.toLocaleDateString("en-US", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        });
-      } catch (e) {
-        return dateString; // Fallback to the original string if parsing fails
-      }
-    };
 
     const formattedStartDate = reportParams?.startDate
       ? new Date(reportParams.startDate).toLocaleDateString()
@@ -156,22 +158,20 @@ export default function ReportsPage() {
             </button>
           </div>
         </div>
+          
       </div>
 
-      {/* First Row: 5 Cards */}
       <div className="w-full flex justify-center pt-10">
-  <div className="flex flex-wrap gap-4 justify-center">
-    {reports.map((report) => (
-      <ReportCard
-        key={report.title}
-        title={report.title}
-        onClick={() => handleCardClick(report.title)}
-      />
-    ))}
-  </div>
-</div>
-
-
+        <div className="flex flex-wrap gap-4 justify-center">
+          {reports.map((report) => (
+            <ReportCard
+              key={report.title}
+              title={report.title}
+              onClick={() => handleCardClick(report.title)}
+            />
+          ))}
+        </div>
+      </div>
 
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-[100]">
