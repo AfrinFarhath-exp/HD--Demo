@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { MessageCircle, Send, Maximize2, X } from "lucide-react";
+import { Send, Maximize2, X } from "lucide-react";
 import { azureSearchService } from "./azureSearchService";
 import { theme } from "../../theme";
 
@@ -200,6 +200,7 @@ const ResponseModal: React.FC<BotMessageModalProps> = ({
           </div>
 
         </div>
+        
       </div>
     </div>
   );
@@ -224,78 +225,77 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
     }
   };
 
-  return (
-    <div
-      className={`flex items-start mb-4 ${
+   return (
+  <div
+  className={`flex items-start mb-4 ${
+    message.isUser ? "justify-end" : "justify-start"
+  }`}
+>
+  {!message.isUser && (
+    <div className="flex-shrink-0 mr-3">
+      <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-white shadow-md">
+        <p className="text-xs">AI</p>
+      </div>
+    </div>
+  )}
+
+  <div className="relative max-w-xs md:max-w-md lg:max-w-xl">
+    <span 
+      className={`text-xs gap-2 flex text-gray-500 mb-1 ${
         message.isUser ? "justify-end" : "justify-start"
       }`}
     >
-      {!message.isUser && (
-        <div className="flex-shrink-0 mr-3">
-          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white shadow-md">
-            {/* <MessageCircle size={20} /> */}
-            AI
-
-          </div>
-        </div>
-      )}
-
-      <div
-        className={`relative max-w-xs md:max-w-md lg:max-w-xl ${
-          message.isUser ? "order-1" : "order-2"
-        }`}
-      >
-         <span
-            className={`text-xs gap-2 flex text-gray-500"}`}
-          >
-            {!message.isUser && (
-          <p >Nitrous AI</p>
-      )}
-            {formatTime(message.timestamp)}
-          </span>
-        <div
-          className={`px-4 py-3 rounded-xl ${
-            message.isUser
-              ? "bg-primary text-white rounded-br-none shadow-md"
-              : "bg-gray-100 text-gray-800 rounded-bl-none shadow-sm hover:bg-gray-200 cursor-pointer"
-          }`}
-          onClick={!message.isUser ? openBotMessageModal : undefined}
-        >
-         
-          <div className="flex justify-between items-start">
-            <p className="text-sm whitespace-pre-wrap">{message.text}</p>
-            {!message.isUser && message.text.length > 200 && (
-              <Maximize2
-                size={16}
-                className="ml-2 text-gray-500 flex-shrink-0"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  openBotMessageModal();
-                }}
-              />
-            )}
-          </div>
-
-
-         
-        </div>
+      {!message.isUser && <p>Nitrous AI</p>}
+      {formatTime(message.timestamp)}
+    </span>
+    
+    <div
+      className={`px-4 py-3 rounded-xl ${
+        message.isUser
+          ? "bg-primary text-white rounded-br-none shadow-md"
+          : "bg-gray-100 text-gray-800 rounded-bl-none shadow-sm hover:bg-gray-200 cursor-pointer"
+      }`}
+      onClick={!message.isUser ? openBotMessageModal : undefined}
+    >
+      <div className="flex justify-between items-start">
+        <p className="text-sm whitespace-pre-wrap">{message.text}</p>
+        {!message.isUser && message.text.length > 200 && (
+          <Maximize2
+            size={16}
+            className="ml-2 text-gray-500 flex-shrink-0"
+            onClick={(e) => {
+              e.stopPropagation();
+              openBotMessageModal();
+            }}
+          />
+        )}
       </div>
-
-      {/* Modal for displaying full report */}
-      <Modal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        data={selectedData}
-      />
-
-      {/* Modal for displaying bot message */}
-      <ResponseModal
-        isOpen={botMessageModalOpen}
-        onClose={() => setBotMessageModalOpen(false)}
-        message={message}
-      />
     </div>
-  );
+  </div>
+
+  {message.isUser && (
+    <div className="flex-shrink-0 ml-3">
+      <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-white shadow-md">
+        <p className="text-xs">U</p>
+      </div>
+    </div>
+  )}
+
+  {/* Modal for displaying full report */}
+  <Modal
+    isOpen={modalOpen}
+    onClose={() => setModalOpen(false)}
+    data={selectedData}
+  />
+
+  {/* Modal for displaying bot message */}
+  <ResponseModal
+    isOpen={botMessageModalOpen}
+    onClose={() => setBotMessageModalOpen(false)}
+    message={message}
+  />
+</div>
+);
 };
 
 
