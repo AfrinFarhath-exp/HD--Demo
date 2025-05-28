@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { MessageCircle, Send, Maximize2, X } from "lucide-react";
 import { azureSearchService } from "./azureSearchService";
+import { theme } from "../../theme";
 
 // Type Definitions
 interface Message {
@@ -121,7 +122,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, data }) => {
       >
         {/* Modal Header */}
         <div className="flex justify-between items-center p-4 border-b">
-          <h3 className="text-lg font-semibold">
+          <h3 style={{ fontFamily: `${theme.typography.fontFamily}` }}>
             {data.fileName || "Report Details"}
           </h3>
           <button
@@ -135,7 +136,8 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, data }) => {
         {/* Modal Body */}
         <div className="p-4 overflow-y-auto flex-1">
           {hasContent() ? (
-            <div className="bg-white border rounded-lg p-4 whitespace-pre-wrap">
+            <div className="bg-white border rounded-lg p-4 whitespace-pre-wrap"
+             style={{ fontFamily: `${theme.typography.fontFamily}` }}>
               {data.content}
             </div>
           ) : (
@@ -178,8 +180,9 @@ const ResponseModal: React.FC<BotMessageModalProps> = ({
         <div className="flex justify-between items-center p-4 border-b">
           <div className="flex items-center">
             <div className="w-8 h-8 mr-2 rounded-full bg-primary flex items-center justify-center text-white">
-              HD
+              AI
             </div>
+            Nitrous AI
           </div>
           <button
             onClick={onClose}
@@ -230,7 +233,9 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
       {!message.isUser && (
         <div className="flex-shrink-0 mr-3">
           <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white shadow-md">
-            <MessageCircle size={20} />
+            {/* <MessageCircle size={20} /> */}
+            AI
+
           </div>
         </div>
       )}
@@ -240,6 +245,14 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
           message.isUser ? "order-1" : "order-2"
         }`}
       >
+         <span
+            className={`text-xs gap-2 flex text-gray-500"}`}
+          >
+            {!message.isUser && (
+          <p >Nitrous AI</p>
+      )}
+            {formatTime(message.timestamp)}
+          </span>
         <div
           className={`px-4 py-3 rounded-xl ${
             message.isUser
@@ -248,6 +261,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
           }`}
           onClick={!message.isUser ? openBotMessageModal : undefined}
         >
+         
           <div className="flex justify-between items-start">
             <p className="text-sm whitespace-pre-wrap">{message.text}</p>
             {!message.isUser && message.text.length > 200 && (
@@ -263,13 +277,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
           </div>
 
 
-          <span
-            className={`text-xs block mt-2 ${
-              message.isUser ? "text-blue-100" : "text-gray-500"
-            }`}
-          >
-            {formatTime(message.timestamp)}
-          </span>
+         
         </div>
       </div>
 
@@ -489,7 +497,7 @@ const ReportSearch: React.FC<ReportSearchProps> = ({ query, session_id }) => {
       </div>
 
       {/* Fixed input at bottom */}
-      <div className="fixed bottom-0 left-0 right-0 px-4 py-4 bg-white shadow-lg">
+      <div className="fixed bottom-0 w-5/6 px-4 pb-7 shadow-lg">
         <div className="flex items-center gap-2 max-w-6xl mx-auto ">
           <input
             type="text"
